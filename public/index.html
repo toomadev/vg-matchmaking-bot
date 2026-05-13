@@ -1,1 +1,832 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>VG Matchmaking BR</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #0a0a18;
+    --surface:   #111126;
+    --border:    #1e1e3a;
+    --border2:   #2a2a50;
+    --text:      #7070a0;
+    --text-dim:  #44446a;
+    --white:     #f0f0ff;
+    --green:     #39ff7e;
+    --yellow:    #ffe04b;
+    --blue:      #3bbfff;
+    --red:       #ff5555;
+    --purple:    #b87fff;
+    --green-dim: #1a3325;
+    --red-dim:   #2d1010;
+    --blue-dim:  #0d2233;
+    --radius:    10px;
+    --font-mono: 'Share Tech Mono', monospace;
+    --font-ui:   'Rajdhani', sans-serif;
+  }
 
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-title {
+    font-family: var(--font-ui);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--yellow);
+    letter-spacing: 2px;
+  }
+  .pulse-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+  /* ── TABS ── */
+  .tabs {
+    display: flex;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    flex: 1;
+    min-width: 70px;
+    padding: 10px 8px;
+    text-align: center;
+    font-family: var(--font-ui);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all .2s;
+    white-space: nowrap;
+  }
+  .tab.active {
+    color: var(--yellow);
+    border-bottom-color: var(--yellow);
+  }
+
+  /* ── PAGES ── */
+  .page { display: none; padding: 12px; }
+  .page.active { display: block; }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+    margin-bottom: 10px;
+  }
+  .card-title {
+    font-family: var(--font-ui);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .sep { border: none; border-top: 1px solid var(--border); margin: 10px 0; }
+
+  /* ── STATUS DOTS ── */
+  .status-row { display: flex; align-items: center; gap: 10px; padding: 4px 0; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .dot-green { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .dot-blue  { background: var(--blue);  box-shadow: 0 0 6px var(--blue); }
+  .dot-purple{ background: var(--purple);box-shadow: 0 0 6px var(--purple); }
+  .dot-yellow{ background: var(--yellow);box-shadow: 0 0 6px var(--yellow); }
+  .stat-label { color: var(--text); flex: 1; }
+  .stat-value { color: var(--white); font-weight: bold; font-size: 15px; }
+  .stat-sub   { color: var(--text-dim); font-size: 11px; }
+
+  /* ── PLAYER CARD ── */
+  .player-nick {
+    font-family: var(--font-ui);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--white);
+    letter-spacing: 1px;
+  }
+  .player-fc {
+    font-size: 20px;
+    color: var(--yellow);
+    font-weight: bold;
+  }
+  .player-rank { color: var(--purple); font-size: 13px; }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .stat-box {
+    background: #0d0d20;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px;
+    text-align: center;
+  }
+  .stat-box-val {
+    font-size: 22px;
+    font-weight: bold;
+    font-family: var(--font-ui);
+  }
+  .stat-box-lbl { font-size: 10px; color: var(--text-dim); letter-spacing: 1px; margin-top: 2px; }
+
+  /* ── QUEUE BUTTONS ── */
+  .btn-row { display: flex; gap: 8px; margin-top: 10px; }
+  .btn {
+    flex: 1;
+    padding: 12px 8px;
+    border: none;
+    border-radius: var(--radius);
+    font-family: var(--font-ui);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all .15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .btn:active { transform: scale(.96); }
+  .btn-green  { background: var(--green-dim); color: var(--green); border: 1px solid var(--green); }
+  .btn-red    { background: var(--red-dim);   color: var(--red);   border: 1px solid var(--red); }
+  .btn-blue   { background: var(--blue-dim);  color: var(--blue);  border: 1px solid var(--blue); }
+  .btn-yellow { background: #2a2200; color: var(--yellow); border: 1px solid var(--yellow); }
+  .btn-purple { background: #1e0e33; color: var(--purple); border: 1px solid var(--purple); }
+  .btn-gray   { background: #1a1a2e; color: var(--text);   border: 1px solid var(--border2); }
+  .btn-full   { flex: none; width: 100%; margin-top: 8px; }
+  .btn:disabled { opacity: .4; cursor: not-allowed; }
+
+  /* ── RANKING TABLE ── */
+  .rank-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .rank-row:last-child { border-bottom: none; }
+  .rank-pos { width: 28px; text-align: center; font-size: 16px; flex-shrink: 0; }
+  .rank-nick { flex: 1; color: var(--white); font-family: var(--font-ui); font-size: 15px; font-weight: 600; }
+  .rank-fc   { color: var(--green); font-size: 13px; }
+  .rank-games{ color: var(--text-dim); font-size: 11px; }
+  .rank-wr   { color: var(--blue); font-size: 11px; }
+
+  /* ── MATCH CARD ── */
+  .match-banner {
+    background: linear-gradient(135deg, #0d1a2a, #0a0a18);
+    border: 1px solid var(--blue);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 10px;
+    text-align: center;
+    animation: glow-border 2s infinite;
+  }
+  @keyframes glow-border {
+    0%,100%{ box-shadow: 0 0 8px rgba(59,191,255,.3); }
+    50%    { box-shadow: 0 0 20px rgba(59,191,255,.6); }
+  }
+  .match-title {
+    font-family: var(--font-ui);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--yellow);
+    letter-spacing: 2px;
+  }
+  .sniping-code {
+    font-size: 36px;
+    font-weight: bold;
+    color: var(--white);
+    letter-spacing: 8px;
+    font-family: var(--font-ui);
+    margin: 8px 0;
+  }
+  .nick-format {
+    font-size: 16px;
+    color: var(--green);
+    background: var(--green-dim);
+    border: 1px solid var(--green);
+    border-radius: 6px;
+    padding: 6px 12px;
+    display: inline-block;
+    margin: 6px 0;
+  }
+  .confirm-dots { display: flex; gap: 8px; justify-content: center; margin: 10px 0; }
+  .confirm-dot  {
+    width: 28px; height: 28px; border-radius: 50%;
+    border: 2px solid var(--border2);
+    background: #0a0a18;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    transition: all .3s;
+  }
+  .confirm-dot.done { border-color: var(--green); background: var(--green-dim); }
+
+  /* ── COUNTDOWN ── */
+  .countdown-num {
+    font-family: var(--font-ui);
+    font-size: 80px;
+    font-weight: 700;
+    color: var(--yellow);
+    text-align: center;
+    line-height: 1;
+    text-shadow: 0 0 30px rgba(255,224,75,.5);
+    transition: all .3s;
+  }
+  .progress-bar {
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+    margin: 12px 0;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--blue), var(--green));
+    border-radius: 3px;
+    transition: width .9s linear;
+  }
+
+  /* ── NEWS ── */
+  .news-item {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+  }
+  .news-item:last-child { border-bottom: none; }
+  .news-bullet { color: var(--yellow); flex-shrink: 0; }
+  .news-text   { color: var(--white); line-height: 1.5; }
+  .news-time   { color: var(--text-dim); font-size: 10px; margin-top: 2px; }
+
+  /* ── PENALTY CARD ── */
+  .penalty-card {
+    background: var(--red-dim);
+    border: 1px solid var(--red);
+    border-radius: var(--radius);
+    padding: 14px;
+    margin-bottom: 10px;
+    text-align: center;
+  }
+  .penalty-title { color: var(--red); font-family: var(--font-ui); font-size: 18px; font-weight: 700; }
+  .penalty-exp   { color: var(--yellow); font-size: 12px; margin-top: 6px; }
+
+  /* ── LOADING ── */
+  .loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    gap: 12px;
+    color: var(--text-dim);
+  }
+  .spinner {
+    width: 32px; height: 32px;
+    border: 3px solid var(--border);
+    border-top-color: var(--yellow);
+    border-radius: 50%;
+    animation: spin .8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 20px;
+    padding: 8px 20px;
+    font-family: var(--font-ui);
+    font-size: 13px;
+    color: var(--white);
+    opacity: 0;
+    pointer-events: none;
+    transition: all .3s;
+    z-index: 999;
+    white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ── ALLY LIST ── */
+  .ally-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .ally-row:last-child { border-bottom: none; }
+  .ally-nick { color: var(--white); font-family: var(--font-ui); font-size: 14px; }
+  .ally-fc   { color: var(--yellow); font-size: 12px; }
+
+  .not-registered {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-dim);
+    line-height: 2;
+  }
+  .not-registered .icon { font-size: 40px; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-title">⚡ VG BR</div>
+  <div style="display:flex;align-items:center;gap:8px">
+    <span id="conn-label" style="font-size:10px;color:var(--text-dim)">conectando...</span>
+    <div class="pulse-dot" id="conn-dot" style="background:var(--text-dim);box-shadow:none"></div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" data-tab="lobby">🏠 SAGUÃO</div>
+  <div class="tab" data-tab="match">⚔ PARTIDA</div>
+  <div class="tab" data-tab="profile">👤 PERFIL</div>
+  <div class="tab" data-tab="ranking">🏆 RANKING</div>
+</div>
+
+<!-- PAGES -->
+<div id="page-lobby"   class="page active"></div>
+<div id="page-match"   class="page"></div>
+<div id="page-profile" class="page"></div>
+<div id="page-ranking" class="page"></div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── TELEGRAM WEBAPP ──────────────────────────────────────────────────────────
+const tg = window.Telegram?.WebApp;
+if (tg) {
+  tg.ready();
+  tg.expand();
+  tg.setHeaderColor('#0a0a18');
+  tg.setBackgroundColor('#0a0a18');
+}
+
+const TG_USER = tg?.initDataUnsafe?.user || null;
+const USER_ID = TG_USER?.id || null;
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let globalState  = null;
+let playerData   = null;
+let matchData    = null;
+let countdownInt = null;
+let countdownVal = 10;
+let activeTab    = 'lobby';
+
+// ─── SOCKET.IO ────────────────────────────────────────────────────────────────
+const socket = io({ transports: ['websocket'] });
+
+socket.on('connect', () => {
+  setConnected(true);
+  if (USER_ID) socket.emit('join_player', USER_ID);
+});
+socket.on('disconnect', () => setConnected(false));
+
+socket.on('state_update', (state) => {
+  globalState = state;
+  if (activeTab === 'lobby')   renderLobby();
+  if (activeTab === 'ranking') renderRanking();
+});
+
+socket.on('match_found', ({ matchId }) => {
+  showToast('⚔ Partida encontrada!');
+  if (tg) tg.showAlert('⚔ PARTIDA ENCONTRADA!\n\nAbra a aba PARTIDA para ver os detalhes.');
+  switchTab('match');
+  loadMatch();
+});
+
+socket.on('countdown_start', ({ matchId }) => {
+  showToast('⏱ Contagem regressiva iniciando!');
+  switchTab('match');
+  startCountdown();
+});
+
+socket.on('result_request', ({ matchId, team }) => {
+  showToast('🏁 Reporte o resultado!');
+  switchTab('match');
+  loadMatch();
+});
+
+function setConnected(ok) {
+  document.getElementById('conn-dot').style.background    = ok ? 'var(--green)' : 'var(--red)';
+  document.getElementById('conn-dot').style.boxShadow     = ok ? '0 0 8px var(--green)' : 'none';
+  document.getElementById('conn-label').textContent       = ok ? 'ao vivo' : 'desconectado';
+  document.getElementById('conn-label').style.color       = ok ? 'var(--green)' : 'var(--red)';
+}
+
+// ─── TABS ─────────────────────────────────────────────────────────────────────
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+});
+
+function switchTab(name) {
+  activeTab = name;
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+  document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id === `page-${name}`));
+  if (name === 'lobby')   { loadState(); renderLobby(); }
+  if (name === 'match')   loadMatch();
+  if (name === 'profile') loadProfile();
+  if (name === 'ranking') { loadState(); renderRanking(); }
+}
+
+// ─── DATA LOADING ─────────────────────────────────────────────────────────────
+async function loadState() {
+  try {
+    const r = await fetch('/api/state');
+    globalState = await r.json();
+  } catch(e) {}
+  renderLobby();
+  renderRanking();
+}
+
+async function loadProfile() {
+  if (!USER_ID) { renderProfile(null); return; }
+  markPresence();
+  try {
+    const r = await fetch(`/api/player/${USER_ID}`);
+    playerData = r.ok ? await r.json() : null;
+  } catch(e) { playerData = null; }
+  renderProfile(playerData);
+}
+
+async function loadMatch() {
+  if (!USER_ID) { renderMatch(null); return; }
+  try {
+    const r = await fetch(`/api/match/${USER_ID}`);
+    matchData = r.ok ? await r.json() : { inMatch: false };
+  } catch(e) { matchData = { inMatch: false }; }
+  renderMatch(matchData);
+}
+
+async function markPresence() {
+  if (!USER_ID) return;
+  try { await fetch('/api/presence', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ telegramId: USER_ID }) }); }
+  catch(e) {}
+}
+
+// ─── RENDER: LOBBY ────────────────────────────────────────────────────────────
+function renderLobby() {
+  const el = document.getElementById('page-lobby');
+  if (!globalState) {
+    el.innerHTML = `<div class="loading"><div class="spinner"></div><span>Carregando...</span></div>`;
+    return;
+  }
+  const s = globalState;
+  let html = '';
+
+  // Status card
+  html += `
+    <div class="card">
+      <div class="card-title">📡 STATUS AO VIVO</div>
+      <div class="status-row">
+        <div class="dot dot-green"></div>
+        <span class="stat-label">Online</span>
+        <span class="stat-value">${s.online}</span>
+        <span class="stat-sub">jogadores</span>
+      </div>
+      <div class="status-row">
+        <div class="dot dot-blue"></div>
+        <span class="stat-label">Buscando</span>
+        <span class="stat-value">${s.searching}</span>
+        <span class="stat-sub">jogadores</span>
+      </div>
+      <div class="status-row">
+        <div class="dot dot-purple"></div>
+        <span class="stat-label">Em Jogo</span>
+        <span class="stat-value">${s.inGame}</span>
+        <span class="stat-sub">partida(s)</span>
+      </div>
+    </div>`;
+
+  // Filas
+  html += `
+    <div class="card">
+      <div class="card-title">⚔ FILAS ABERTAS</div>
+      <div class="status-row">
+        <div class="dot dot-yellow"></div>
+        <span class="stat-label">3v3 Casual</span>
+        <span class="stat-value">${s.queue3v3}/6</span>
+      </div>
+      <div class="status-row">
+        <div class="dot dot-yellow"></div>
+        <span class="stat-label">5v5 Ranked</span>
+        <span class="stat-value">${s.queue5v5}/10</span>
+      </div>
+    </div>`;
+
+  // Partidas ativas
+  if (s.matches && s.matches.length > 0) {
+    html += `<div class="card"><div class="card-title">🎮 PARTIDAS EM ANDAMENTO</div>`;
+    s.matches.forEach(m => {
+      html += `
+        <div class="status-row">
+          <div class="dot dot-purple"></div>
+          <span class="stat-label">#${m.id} · ${m.mode}</span>
+          <span class="stat-sub">${m.confirmed}/${m.total} conf.</span>
+        </div>`;
+    });
+    html += `</div>`;
+  }
+
+  // Ranking mini
+  if (s.ranking && s.ranking.length > 0) {
+    const medals = ['🥇','🥈','🥉'];
+    html += `<div class="card"><div class="card-title">🏆 TOP 3</div>`;
+    s.ranking.slice(0,3).forEach((p, i) => {
+      html += `
+        <div class="status-row">
+          <span style="width:24px;text-align:center">${medals[i]}</span>
+          <span class="stat-label" style="color:var(--white)">${p.nick}</span>
+          <span class="rank-fc">${p.fc}</span>
+        </div>`;
+    });
+    html += `</div>`;
+  }
+
+  el.innerHTML = html;
+}
+
+// ─── RENDER: MATCH ────────────────────────────────────────────────────────────
+function renderMatch(data) {
+  const el = document.getElementById('page-match');
+  if (!data) {
+    el.innerHTML = `<div class="loading"><div class="spinner"></div></div>`;
+    return;
+  }
+  if (!data.inMatch) {
+    el.innerHTML = `
+      <div class="card" style="text-align:center;padding:30px">
+        <div style="font-size:40px;margin-bottom:12px">⏳</div>
+        <div style="color:var(--text);font-family:var(--font-ui);font-size:16px">Nenhuma partida ativa</div>
+        <div style="color:var(--text-dim);margin-top:6px">Entre em uma fila pelo bot para encontrar uma partida</div>
+      </div>`;
+    return;
+  }
+
+  const dots = Array.from({ length: data.total }, (_, i) =>
+    `<div class="confirm-dot ${i < data.confirmed ? 'done' : ''}">
+      ${i < data.confirmed ? '✔' : ''}
+    </div>`
+  ).join('');
+
+  const allies = (data.allies || []).map(a =>
+    `<div class="ally-row">
+      <span class="ally-nick">▸ ${a.nick}</span>
+      <span class="ally-fc">${a.fc}</span>
+    </div>`
+  ).join('');
+
+  const enemies = Array.from({ length: data.total / 2 }, () =>
+    `<div class="ally-row"><span class="ally-nick" style="color:var(--text-dim)">▸ oculto</span></div>`
+  ).join('');
+
+  const confirmStatus = data.iConfirmed
+    ? `<div style="color:var(--green);font-family:var(--font-ui);margin-top:8px">✔ Você confirmou a troca de nick</div>`
+    : `<div style="color:var(--yellow);font-family:var(--font-ui);margin-top:8px">⚠ Confirme no bot que trocou o nick</div>`;
+
+  el.innerHTML = `
+    <div class="match-banner">
+      <div class="match-title">⚔ PARTIDA #${data.matchId}</div>
+      <div style="color:var(--text);font-size:12px;margin-top:4px">${data.mode === '3v3' ? '3v3 Casual' : '5v5 Ranked'}</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🎯 SNIPING CODE</div>
+      <div class="sniping-code">${data.snipingCode}</div>
+      <div style="color:var(--text-dim);font-size:11px">Abra a sala com este código</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📝 SEU NICK IN-GAME</div>
+      <div class="nick-format">${data.myNickFormat}<span style="color:var(--text-dim)">SeuNick</span></div>
+      <div style="color:var(--text-dim);font-size:11px;margin-top:6px">Troque seu nick para o formato acima</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🟦 SEU TIME</div>
+      ${allies}
+      <hr class="sep">
+      <div class="card-title" style="margin-bottom:8px">🟥 ADVERSÁRIOS</div>
+      ${enemies}
+    </div>
+
+    <div class="card">
+      <div class="card-title">✅ CONFIRMAÇÕES (${data.confirmed}/${data.total})</div>
+      <div class="confirm-dots">${dots}</div>
+      ${confirmStatus}
+    </div>
+
+    <div id="countdown-section" style="display:none">
+      <div class="card" style="text-align:center">
+        <div class="card-title">⏱ BUSCANDO EM</div>
+        <div class="countdown-num" id="cd-num">10</div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="cd-bar" style="width:0%"></div>
+        </div>
+        <div style="color:var(--yellow);font-family:var(--font-ui)">⚡ Preparem-se para buscar!</div>
+      </div>
+    </div>`;
+}
+
+function startCountdown() {
+  clearInterval(countdownInt);
+  countdownVal = 10;
+  const section = document.getElementById('countdown-section');
+  if (section) section.style.display = 'block';
+  countdownInt = setInterval(() => {
+    countdownVal--;
+    const numEl = document.getElementById('cd-num');
+    const barEl = document.getElementById('cd-bar');
+    if (numEl) numEl.textContent = countdownVal;
+    if (barEl) barEl.style.width = `${((10 - countdownVal) / 10) * 100}%`;
+    if (countdownVal <= 0) {
+      clearInterval(countdownInt);
+      showToast('🎯 BUSQUEM AGORA!');
+      if (tg) tg.HapticFeedback?.notificationOccurred('success');
+    }
+  }, 1000);
+}
+
+// ─── RENDER: PROFILE ──────────────────────────────────────────────────────────
+function renderProfile(data) {
+  const el = document.getElementById('page-profile');
+
+  if (!USER_ID) {
+    el.innerHTML = `
+      <div class="not-registered">
+        <div class="icon">🤖</div>
+        <div style="color:var(--white);font-family:var(--font-ui);font-size:16px">Abra pelo Telegram</div>
+        <div>Acesse via bot para ver seu perfil</div>
+      </div>`;
+    return;
+  }
+
+  if (!data) {
+    el.innerHTML = `
+      <div class="not-registered">
+        <div class="icon">❓</div>
+        <div style="color:var(--white);font-family:var(--font-ui);font-size:16px">Não registrado</div>
+        <div>Use /start no bot para criar seu perfil</div>
+      </div>`;
+    return;
+  }
+
+  const isPenalty = data.penalty;
+  let html = '';
+
+  if (isPenalty) {
+    const exp = data.penaltyUntil ? new Date(data.penaltyUntil).toLocaleString('pt-BR') : '?';
+    html += `
+      <div class="penalty-card">
+        <div class="penalty-title">💀 JOGADOR PENALIZADO</div>
+        <div style="color:var(--text);margin-top:6px">Motivo: Não confirmou</div>
+        <div class="penalty-exp">Expira em: ${exp}</div>
+      </div>`;
+  }
+
+  html += `
+    <div class="card">
+      <div class="player-nick">${data.nick}</div>
+      <div style="margin-top:6px;display:flex;align-items:center;gap:12px">
+        <div class="player-fc">${data.fc || '💀'}</div>
+        ${data.rank ? `<div class="player-rank">#${data.rank} BR de ${data.totalRanked}</div>` : `<div style="color:var(--text-dim);font-size:12px">${data.games}/10 partidas</div>`}
+      </div>
+      <div style="margin-top:6px">
+        <span class="dot ${data.online ? 'dot-green' : 'dot-yellow'}" style="display:inline-block;vertical-align:middle;margin-right:6px"></span>
+        <span style="font-size:11px">${data.online ? 'Online' : 'Ausente'}</span>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-box">
+        <div class="stat-box-val" style="color:var(--green)">${data.wins}</div>
+        <div class="stat-box-lbl">VITÓRIAS</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-box-val" style="color:var(--red)">${data.losses}</div>
+        <div class="stat-box-lbl">DERROTAS</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-box-val" style="color:var(--white)">${data.games}</div>
+        <div class="stat-box-lbl">PARTIDAS</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-box-val" style="color:var(--blue)">${data.winRate}%</div>
+        <div class="stat-box-lbl">WIN RATE</div>
+      </div>
+    </div>
+
+    <div style="height:10px"></div>`;
+
+  if (data.inMatch) {
+    html += `
+      <div class="card" style="border-color:var(--blue)">
+        <div style="color:var(--blue);font-family:var(--font-ui);font-weight:700">⚔ EM PARTIDA</div>
+        <button class="btn btn-blue btn-full" onclick="switchTab('match')">Ver Partida →</button>
+      </div>`;
+  }
+
+  el.innerHTML = html;
+}
+
+// ─── RENDER: RANKING ──────────────────────────────────────────────────────────
+function renderRanking() {
+  const el = document.getElementById('page-ranking');
+  if (!globalState?.ranking) {
+    el.innerHTML = `<div class="loading"><div class="spinner"></div></div>`;
+    return;
+  }
+
+  const medals = ['🥇','🥈','🥉'];
+  const rows = globalState.ranking.map((p, i) => `
+    <div class="rank-row">
+      <div class="rank-pos">${i < 3 ? medals[i] : i + 1}</div>
+      <div>
+        <div class="rank-nick ${p.penalty ? 'style="color:var(--red)"' : ''}">${p.nick}</div>
+        <div class="rank-wr">${p.wins}V · ${p.losses}D</div>
+      </div>
+      <div style="text-align:right">
+        <div class="rank-fc">${p.penalty ? '💀' : p.fc}</div>
+        <div class="rank-games">${p.games} jogos</div>
+      </div>
+    </div>`).join('');
+
+  el.innerHTML = `
+    <div class="card">
+      <div class="card-title">🏆 TOP PLAYERS BR</div>
+      ${rows || `<div style="color:var(--text-dim);text-align:center;padding:20px">Nenhum jogador com 10+ partidas ainda</div>`}
+      <hr class="sep">
+      <div style="color:var(--text-dim);font-size:11px;text-align:center">Mín. 10 partidas para rankear</div>
+    </div>`;
+}
+
+// ─── TOAST ────────────────────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  if (tg) tg.HapticFeedback?.impactOccurred('light');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+markPresence();
+loadState();
+loadProfile();
+
+// Refresca presença a cada 60s
+setInterval(markPresence, 60 * 1000);
+// Refresca dados a cada 15s como fallback
+setInterval(() => {
+  loadState();
+  if (activeTab === 'match') loadMatch();
+}, 15 * 1000);
+</script>
+</body>
+</html>
