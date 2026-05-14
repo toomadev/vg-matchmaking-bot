@@ -5,7 +5,7 @@ const path       = require('path');
 const cors       = require('cors');
 
 const { pool }                              = require('./database');
-const { queue3v3, queue5v5, activeMatches } = require('./matchmaking');
+const { queue3v3, queue5v5, activeMatches, addToQueue, removeFromQueue } = require('./matchmaking');
 
 const app    = express();
 const server = http.createServer(app);
@@ -75,6 +75,31 @@ app.get('/api/state', async (req, res) => {
     try { res.json(await getGlobalState()); } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+// Busca jogador por nickname — DEVE vir ANTES de /:telegramId para não conflitar
+app.get('/api/player/nick/:nickname', async (req, res) => {
+    try {
+        const nick = req.params.nickname;
+        const [rows] = await pool.execute('SELECT * FROM players WHERE nickname = ?', [nick]);
+        if (!rows[0]) return res.status(404).json({ error: 'not_found' });
+        const p         = rows[0];
+        const isPenalty = p.penalty_until && new Date(p.penalty_until) > new Date();
+        const wr        = p.games > 0 ? ((p.wins / p.games) * 100).toFixed(1) : '0.0';
+        const [rankRows]  = await pool.execute('SELECT COUNT(*) as pos FROM players WHERE vg_index > ? AND games >= 10', [p.vg_index]);
+        const [totalRows] = await pool.execute('SELECT COUNT(*) as total FROM players WHERE games >= 10');
+        res.json({
+            nick: p.nickname, id: p.telegram_id,
+            fc: isPenalty ? null : formatFC(p.games, p.vg_index),
+            fcRaw: Number(p.vg_index).toFixed(2),
+            wins: p.wins, losses: p.losses, games: p.games, winRate: wr,
+            penalty: isPenalty, penaltyUntil: p.penalty_until,
+            rank: p.games >= 10 ? rankRows[0].pos + 1 : null,
+            totalRanked: totalRows[0].total,
+            online: onlineUsers.get(p.telegram_id)?.status === 'online',
+        });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// Busca jogador por telegramId
 app.get('/api/player/:telegramId', async (req, res) => {
     try {
         const uid = Number(req.params.telegramId);
@@ -147,18 +172,100 @@ app.get('/api/news', async (req, res) => {
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// Rota interna: bot dispara broadcast
+// ─── ROTA: ENTRAR NA FILA (Mini App) ─────────────────────────────────────────
+app.post('/api/queue/join', async (req, res) => {
+    try {
+        const { telegramId, mode } = req.body;
+        if (!telegramId || !mode) return res.status(400).json({ error: 'missing_params' });
+        const uid = Number(telegramId);
+
+        // Verifica se o jogador existe
+        const [rows] = await pool.execute('SELECT nickname, penalty_until FROM players WHERE telegram_id = ?', [uid]);
+        if (!rows[0]) return res.status(404).json({ error: 'not_registered', message: 'Use /start no bot para se registrar.' });
+
+        // Verifica penalidade
+        const isPenalty = rows[0].penalty_until && new Date(rows[0].penalty_until) > new Date();
+        if (isPenalty) return res.status(403).json({ error: 'penalized', message: 'Você está penalizado.' });
+
+        // Garante que está online
+        const user = onlineUsers.get(uid);
+        if (!user) {
+            onlineUsers.set(uid, { timestamp: Date.now(), status: 'online' });
+        } else {
+            user.status    = 'online';
+            user.timestamp = Date.now();
+        }
+
+        const success = addToQueue(mode, { id: uid, name: rows[0].nickname }, activeMatches, onlineUsers);
+        if (!success) {
+            // Verifica se já está em fila ou em partida
+            const inQ = queue3v3.some(p => p.id === uid) || queue5v5.some(p => p.id === uid);
+            const inM = activeMatches.some(m => m.teamA.some(p => p.id === uid) || m.teamB.some(p => p.id === uid));
+            if (inM) return res.status(409).json({ error: 'in_match', message: 'Você já está em uma partida.' });
+            if (inQ) return res.status(409).json({ error: 'already_in_queue', message: 'Você já está em uma fila.' });
+            return res.status(409).json({ error: 'cannot_join', message: 'Não foi possível entrar na fila.' });
+        }
+
+        await broadcastState();
+        res.json({ ok: true, mode, queueSize: mode === '3v3' ? queue3v3.length : queue5v5.length });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ─── ROTA: SAIR DA FILA (Mini App) ───────────────────────────────────────────
+app.post('/api/queue/leave', async (req, res) => {
+    try {
+        const { telegramId } = req.body;
+        if (!telegramId) return res.status(400).json({ error: 'missing_params' });
+        const uid = Number(telegramId);
+        removeFromQueue(uid);
+        await broadcastState();
+        res.json({ ok: true });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ─── ROTA: MUDAR STATUS online/away (Mini App) ────────────────────────────────
+app.post('/api/status', async (req, res) => {
+    try {
+        const { telegramId, status } = req.body;
+        if (!telegramId || !status) return res.status(400).json({ error: 'missing_params' });
+        if (!['online', 'away'].includes(status)) return res.status(400).json({ error: 'invalid_status' });
+        const uid  = Number(telegramId);
+        const user = onlineUsers.get(uid);
+        if (status === 'online') {
+            onlineUsers.set(uid, { timestamp: Date.now(), status: 'online' });
+        } else {
+            // away: remove da fila e marca como ausente
+            removeFromQueue(uid);
+            if (user) {
+                user.status = 'away';
+            } else {
+                onlineUsers.set(uid, { timestamp: Date.now(), status: 'away' });
+            }
+        }
+        await broadcastState();
+        res.json({ ok: true, status });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ─── ROTA INTERNA: bot dispara broadcast ─────────────────────────────────────
 app.post('/api/internal/broadcast', async (req, res) => {
     if (req.body.secret !== process.env.INTERNAL_SECRET) return res.status(403).json({ error: 'forbidden' });
     await broadcastState();
     res.json({ ok: true });
 });
 
-// Presença via Mini App
+// ─── ROTA: PRESENÇA via Mini App ─────────────────────────────────────────────
 app.post('/api/presence', async (req, res) => {
     const { telegramId } = req.body;
     if (!telegramId) return res.status(400).json({ error: 'missing telegramId' });
-    onlineUsers.set(Number(telegramId), { timestamp: Date.now(), status: 'online' });
+    const uid  = Number(telegramId);
+    const user = onlineUsers.get(uid);
+    // Só atualiza timestamp; preserva status atual (online/away)
+    if (user) {
+        user.timestamp = Date.now();
+    } else {
+        onlineUsers.set(uid, { timestamp: Date.now(), status: 'online' });
+    }
     await broadcastState();
     res.json({ ok: true });
 });
