@@ -4,7 +4,7 @@ const fs   = require('fs');
 const path = require('path');
 const https = require('https');
 
-const { pool } = require(path.join(__dirname, '../database'));
+const { pool } = require('./database');
 
 // ─── UTILS ────────────────────────────────────────────────────────────────────
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
@@ -195,3 +195,6 @@ async function startBot() {
 
 // ─── EXPORT ───────────────────────────────────────────────────────────────────
 module.exports = { startBot };
+
+
+require('./server');
