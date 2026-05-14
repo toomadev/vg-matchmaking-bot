@@ -1,6 +1,6 @@
 
 const { Telegraf, Markup } = require('telegraf');
-const { pg } = require('./database');
+const { pg } = require('../database');
 
 // ─── UTILS ────────────────────────────────────────────────────────────────────
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
