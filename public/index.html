@@ -24,7 +24,7 @@
     --green-dim: #1a3325;
     --red-dim:   #2d1010;
     --blue-dim:  #0d2233;
-    --radius:    10px;
+    --radius:    12px;
     --font-mono: 'Share Tech Mono', monospace;
   }
 
@@ -41,44 +41,65 @@
 
   /* ── HEADER ── */
   .header {
-    background: var(--surface);
     border-bottom: 1px solid var(--border);
-    padding: 12px 16px;
+    padding: 14px 18px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     position: sticky;
     top: 0;
     z-index: 100;
+    background: var(--bg);
   }
   .header-title {
-    font-size: 18px;
+    font-size: 15px;
     font-weight: 700;
     color: var(--yellow);
-    letter-spacing: 2px;
+    letter-spacing: 1px;
+  }
+  .header-status {
+    font-size: 11px;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .header-status-text {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    letter-spacing: 0.5px;
   }
   .pulse-dot {
-    width: 8px; height: 8px;
+    width: 7px; height: 7px;
     border-radius: 50%;
     background: var(--green);
-    box-shadow: 0 0 8px var(--green);
+    box-shadow: 0 0 6px var(--green);
     animation: pulse 2s infinite;
+    flex-shrink: 0;
   }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
 
   /* ── TABS ── */
   .tabs {
     display: flex;
-    background: var(--surface);
     border-bottom: 1px solid var(--border);
     overflow-x: auto;
     scrollbar-width: none;
+    background: var(--bg);
   }
   .tabs::-webkit-scrollbar { display: none; }
   .tab {
     flex: 1;
-    min-width: 70px;
-    padding: 10px 8px;
+    min-width: 80px;
+    padding: 14px 10px;
     text-align: center;
     font-size: 12px;
     font-weight: 700;
@@ -95,79 +116,109 @@
   }
 
   /* ── PAGES ── */
-  .page { display: none; padding: 12px; }
+  .page { display: none; padding: 18px 16px; }
   .page.active { display: block; }
 
-  /* ── CARD ── */
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 14px;
-    margin-bottom: 10px;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-  }
-  .card-title {
-    font-size: 11px;
+  /* ── SECTION TITLE ── */
+  .section-title {
+    font-size: 10px;
     font-weight: 700;
     letter-spacing: 2px;
     color: var(--text-dim);
     text-transform: uppercase;
-    margin-bottom: 10px;
+    margin-bottom: 14px;
+    margin-top: 4px;
   }
-  .sep { border: none; border-top: 1px solid var(--border); margin: 10px 0; }
 
-  /* ── STATUS DOTS ── */
-  .status-row { display: flex; align-items: center; gap: 10px; padding: 4px 0; }
+  /* ── SEPARATOR ── */
+  .sep { border: none; border-top: 1px solid var(--border); margin: 18px 0; }
+
+  /* ── STATUS INLINE ── */
+  .status-inline {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  .status-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+  }
   .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
   .dot-green { background: var(--green); box-shadow: 0 0 6px var(--green); }
   .dot-blue  { background: var(--blue);  box-shadow: 0 0 6px var(--blue); }
   .dot-purple{ background: var(--purple);box-shadow: 0 0 6px var(--purple); }
   .dot-yellow{ background: var(--yellow);box-shadow: 0 0 6px var(--yellow); }
-  .stat-label { color: var(--text); flex: 1; }
-  .stat-value { color: var(--white); font-weight: bold; font-size: 15px; }
-  .stat-sub   { color: var(--text-dim); font-size: 11px; }
 
-  /* ── PLAYER CARD ── */
+  /* ── PLAYER INFO BLOCK ── */
+  .player-block {
+    margin-bottom: 22px;
+  }
   .player-nick {
-    font-size: 22px;
+    font-size: 24px;
     font-weight: 700;
     color: var(--white);
     letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+  .player-meta {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    font-size: 13px;
   }
   .player-fc {
-    font-size: 20px;
     color: var(--yellow);
     font-weight: bold;
+    font-size: 15px;
   }
-  .player-rank { color: var(--purple); font-size: 13px; }
+  .player-rank { color: var(--purple); }
 
+  /* ── QUEUE STATUS ── */
+  .queue-status {
+    margin-bottom: 22px;
+  }
+  .queue-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .queue-row:last-child { border-bottom: none; }
+  .queue-label { color: var(--text); font-size: 13px; }
+  .queue-count { color: var(--white); font-weight: bold; font-size: 15px; }
+  .queue-sub   { color: var(--text-dim); font-size: 11px; }
+
+  /* ── STATS GRID ── */
   .stats-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    margin-top: 8px;
+    gap: 12px;
+    margin-bottom: 22px;
   }
   .stat-box {
-    background: #0d0d20;
     border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px;
+    border-radius: var(--radius);
+    padding: 16px 12px;
     text-align: center;
   }
   .stat-box-val {
-    font-size: 22px;
+    font-size: 24px;
     font-weight: bold;
+    margin-bottom: 4px;
   }
-  .stat-box-lbl { font-size: 10px; color: var(--text-dim); letter-spacing: 1px; margin-top: 2px; }
+  .stat-box-lbl { font-size: 10px; color: var(--text-dim); letter-spacing: 1px; }
 
-  /* ── QUEUE BUTTONS ── */
-  .btn-row { display: flex; gap: 8px; margin-top: 10px; }
+  /* ── BUTTONS ── */
+  .btn-row { display: flex; gap: 12px; margin-bottom: 14px; }
   .btn {
     flex: 1;
-    padding: 12px 8px;
-    border: none;
+    padding: 16px 12px;
     border-radius: var(--radius);
     font-family: var(--font-mono);
     font-size: 14px;
@@ -178,40 +229,40 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: 8px;
+    min-height: 52px;
   }
   .btn:active { transform: scale(.96); }
-  .btn-green  { background: var(--green-dim); color: var(--green); border: 1px solid var(--green); }
-  .btn-red    { background: var(--red-dim);   color: var(--red);   border: 1px solid var(--red); }
-  .btn-blue   { background: var(--blue-dim);  color: var(--blue);  border: 1px solid var(--blue); }
-  .btn-yellow { background: #2a2200; color: var(--yellow); border: 1px solid var(--yellow); }
-  .btn-purple { background: #1e0e33; color: var(--purple); border: 1px solid var(--purple); }
-  .btn-gray   { background: #1a1a2e; color: var(--text);   border: 1px solid var(--border2); }
-  .btn-full   { flex: none; width: 100%; margin-top: 8px; }
-  .btn:disabled { opacity: .4; cursor: not-allowed; }
+  .btn-green  { background: var(--green-dim); color: var(--green); border: 2px solid var(--green); }
+  .btn-red    { background: var(--red-dim);   color: var(--red);   border: 2px solid var(--red); }
+  .btn-blue   { background: var(--blue-dim);  color: var(--blue);  border: 2px solid var(--blue); }
+  .btn-yellow { background: #2a2200; color: var(--yellow); border: 2px solid var(--yellow); }
+  .btn-purple { background: #1e0e33; color: var(--purple); border: 2px solid var(--purple); }
+  .btn-gray   { background: #1a1a2e; color: var(--text);   border: 2px solid var(--border2); }
+  .btn-full   { flex: none; width: 100%; margin-bottom: 14px; }
+  .btn:disabled { opacity: .35; cursor: not-allowed; transform: none; }
 
   /* ── RANKING TABLE ── */
   .rank-row {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 8px 0;
+    gap: 12px;
+    padding: 14px 0;
     border-bottom: 1px solid var(--border);
   }
   .rank-row:last-child { border-bottom: none; }
-  .rank-pos { width: 28px; text-align: center; font-size: 16px; flex-shrink: 0; }
-  .rank-nick { flex: 1; color: var(--white); font-size: 15px; font-weight: 600; }
-  .rank-fc   { color: var(--green); font-size: 13px; }
-  .rank-games{ color: var(--text-dim); font-size: 11px; }
-  .rank-wr   { color: var(--blue); font-size: 11px; }
+  .rank-pos { width: 30px; text-align: center; font-size: 18px; flex-shrink: 0; }
+  .rank-info { flex: 1; }
+  .rank-nick { color: var(--white); font-size: 15px; font-weight: 600; margin-bottom: 3px; }
+  .rank-sub  { color: var(--text-dim); font-size: 11px; }
+  .rank-fc   { color: var(--green); font-size: 14px; font-weight: bold; }
 
   /* ── MATCH CARD ── */
   .match-banner {
-    background: linear-gradient(135deg, #0d1a2a, #0a0a18);
-    border: 1px solid var(--blue);
+    border: 2px solid var(--blue);
     border-radius: var(--radius);
-    padding: 16px;
-    margin-bottom: 10px;
+    padding: 20px 16px;
+    margin-bottom: 18px;
     text-align: center;
     animation: glow-border 2s infinite;
   }
@@ -224,83 +275,88 @@
     font-weight: 700;
     color: var(--yellow);
     letter-spacing: 2px;
+    margin-bottom: 8px;
+  }
+  .match-id {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 16px;
   }
   .sniping-code {
-    font-size: 36px;
+    font-size: 38px;
     font-weight: bold;
     color: var(--white);
-    letter-spacing: 8px;
-    margin: 8px 0;
+    letter-spacing: 10px;
+    margin: 10px 0;
   }
   .nick-format {
-    font-size: 16px;
+    font-size: 15px;
     color: var(--green);
-    background: var(--green-dim);
     border: 1px solid var(--green);
-    border-radius: 6px;
-    padding: 6px 12px;
+    border-radius: 8px;
+    padding: 8px 14px;
     display: inline-block;
-    margin: 6px 0;
+    margin: 8px 0;
+    background: var(--green-dim);
   }
-  .confirm-dots { display: flex; gap: 8px; justify-content: center; margin: 10px 0; }
+  .confirm-dots { display: flex; gap: 10px; justify-content: center; margin: 14px 0; flex-wrap: wrap; }
   .confirm-dot  {
-    width: 28px; height: 28px; border-radius: 50%;
+    width: 30px; height: 30px; border-radius: 50%;
     border: 2px solid var(--border2);
-    background: #0a0a18;
+    background: var(--bg);
     display: flex; align-items: center; justify-content: center;
     font-size: 14px;
     transition: all .3s;
   }
   .confirm-dot.done { border-color: var(--green); background: var(--green-dim); }
 
+  /* ── ALLY LIST ── */
+  .ally-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .ally-row:last-child { border-bottom: none; }
+  .ally-nick { color: var(--white); font-size: 14px; }
+  .ally-fc   { color: var(--yellow); font-size: 12px; }
+
   /* ── COUNTDOWN ── */
   .countdown-num {
-    font-size: 80px;
+    font-size: 88px;
     font-weight: 700;
     color: var(--yellow);
     text-align: center;
     line-height: 1;
     text-shadow: 0 0 30px rgba(255,224,75,.5);
     transition: all .3s;
+    margin: 16px 0;
   }
   .progress-bar {
-    height: 6px;
+    height: 8px;
     background: var(--border);
-    border-radius: 3px;
+    border-radius: 4px;
     overflow: hidden;
-    margin: 12px 0;
+    margin: 16px 0;
   }
   .progress-fill {
     height: 100%;
     background: linear-gradient(90deg, var(--blue), var(--green));
-    border-radius: 3px;
+    border-radius: 4px;
     transition: width .9s linear;
   }
 
-  /* ── NEWS ── */
-  .news-item {
-    padding: 8px 0;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    gap: 8px;
-    align-items: flex-start;
-  }
-  .news-item:last-child { border-bottom: none; }
-  .news-bullet { color: var(--yellow); flex-shrink: 0; }
-  .news-text   { color: var(--white); line-height: 1.5; }
-  .news-time   { color: var(--text-dim); font-size: 10px; margin-top: 2px; }
-
   /* ── PENALTY CARD ── */
   .penalty-card {
-    background: var(--red-dim);
-    border: 1px solid var(--red);
+    border: 2px solid var(--red);
     border-radius: var(--radius);
-    padding: 14px;
-    margin-bottom: 10px;
+    padding: 20px 16px;
+    margin-bottom: 18px;
     text-align: center;
   }
-  .penalty-title { color: var(--red); font-size: 18px; font-weight: 700; }
-  .penalty-exp   { color: var(--yellow); font-size: 12px; margin-top: 6px; }
+  .penalty-title { color: var(--red); font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+  .penalty-exp   { color: var(--yellow); font-size: 12px; margin-top: 8px; }
 
   /* ── LOADING ── */
   .loading {
@@ -308,12 +364,12 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 200px;
-    gap: 12px;
+    min-height: 220px;
+    gap: 16px;
     color: var(--text-dim);
   }
   .spinner {
-    width: 32px; height: 32px;
+    width: 36px; height: 36px;
     border: 3px solid var(--border);
     border-top-color: var(--yellow);
     border-radius: 50%;
@@ -324,13 +380,13 @@
   /* ── TOAST ── */
   .toast {
     position: fixed;
-    bottom: 80px;
+    bottom: 28px;
     left: 50%;
     transform: translateX(-50%) translateY(20px);
     background: var(--surface);
     border: 1px solid var(--border2);
     border-radius: 20px;
-    padding: 8px 20px;
+    padding: 10px 22px;
     font-size: 13px;
     color: var(--white);
     opacity: 0;
@@ -341,25 +397,36 @@
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-  /* ── ALLY LIST ── */
-  .ally-row {
+  /* ── SEARCH INPUT ── */
+  .search-box {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 6px 0;
-    border-bottom: 1px solid var(--border);
+    gap: 10px;
+    margin-bottom: 20px;
   }
-  .ally-row:last-child { border-bottom: none; }
-  .ally-nick { color: var(--white); font-size: 14px; }
-  .ally-fc   { color: var(--yellow); font-size: 12px; }
+  .search-input {
+    flex: 1;
+    background: var(--bg);
+    border: 2px solid var(--border2);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    color: var(--white);
+    font-family: var(--font-mono);
+    font-size: 14px;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .search-input:focus { border-color: var(--blue); }
+  .search-input::placeholder { color: var(--text-dim); }
 
-  .not-registered {
+  /* ── EMPTY STATE ── */
+  .empty-state {
     text-align: center;
-    padding: 40px 20px;
+    padding: 50px 24px;
     color: var(--text-dim);
-    line-height: 2;
+    line-height: 2.2;
   }
-  .not-registered .icon { font-size: 40px; margin-bottom: 8px; }
+  .empty-state .icon { font-size: 44px; margin-bottom: 12px; }
+  .empty-state .title { color: var(--white); font-size: 16px; margin-bottom: 8px; }
 
   /* ── COLOR CLASSES ── */
   .g  { color: var(--green); }
@@ -368,9 +435,32 @@
   .r  { color: var(--red); }
   .p  { color: var(--purple); }
   .w  { color: var(--white); font-weight: 600; }
-  .d  { color: #252545; }
   .dim{ color: var(--text-dim); }
-  .s  { color: var(--border2); }
+
+  /* ── ONLINE STATUS BADGE ── */
+  .online-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-weight: 700;
+  }
+  .badge-online  { color: var(--green);  border: 1px solid var(--green);  background: var(--green-dim); }
+  .badge-away    { color: var(--yellow); border: 1px solid var(--yellow); background: #2a2200; }
+  .badge-offline { color: var(--text);   border: 1px solid var(--border2); background: #1a1a2e; }
+  .badge-queue   { color: var(--blue);   border: 1px solid var(--blue);   background: var(--blue-dim); }
+
+  /* ── MY STATUS SECTION ── */
+  .my-status-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 22px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
 </style>
 </head>
 <body>
@@ -378,23 +468,22 @@
 <!-- HEADER -->
 <div class="header">
   <div class="header-title">⚡ VG BR</div>
-  <div style="display:flex;align-items:center;gap:8px">
-    <span id="conn-label" style="font-size:10px;color:var(--text-dim)">conectando...</span>
-    <div class="pulse-dot" id="conn-dot" style="background:var(--text-dim);box-shadow:none"></div>
+  <div class="header-status">
+    <div class="header-status-text" id="header-status-text">
+      <span class="status-pill"><span class="dot dot-green" id="conn-dot" style="background:var(--text-dim);box-shadow:none"></span><span id="conn-label" style="color:var(--text-dim)">conectando...</span></span>
+    </div>
   </div>
 </div>
 
 <!-- TABS -->
 <div class="tabs">
   <div class="tab active" data-tab="lobby">🏠 SAGUÃO</div>
-  <div class="tab" data-tab="match">⚔ PARTIDA</div>
   <div class="tab" data-tab="profile">👤 PERFIL</div>
   <div class="tab" data-tab="ranking">🏆 RANKING</div>
 </div>
 
 <!-- PAGES -->
 <div id="page-lobby"   class="page active"></div>
-<div id="page-match"   class="page"></div>
 <div id="page-profile" class="page"></div>
 <div id="page-ranking" class="page"></div>
 
@@ -421,6 +510,8 @@ let matchData    = null;
 let countdownInt = null;
 let countdownVal = 10;
 let activeTab    = 'lobby';
+let myStatus     = 'online'; // 'online' | 'away' | 'queue3v3' | 'queue5v5'
+let lastActivityTs = Date.now();
 
 // ─── SOCKET.IO ────────────────────────────────────────────────────────────────
 const socket = io({ transports: ['websocket'] });
@@ -433,34 +524,58 @@ socket.on('disconnect', () => setConnected(false));
 
 socket.on('state_update', (state) => {
   globalState = state;
+  updateHeaderStatus();
   if (activeTab === 'lobby')   renderLobby();
   if (activeTab === 'ranking') renderRanking();
 });
 
 socket.on('match_found', ({ matchId }) => {
   showToast('⚔ Partida encontrada!');
-  if (tg) tg.showAlert('⚔ PARTIDA ENCONTRADA!\n\nAbra a aba PARTIDA para ver os detalhes.');
-  switchTab('match');
+  if (tg) tg.showAlert('⚔ PARTIDA ENCONTRADA!\n\nVeja os detalhes na aba SAGUÃO.');
+  // Atualiza status local
+  myStatus = 'match';
+  switchTab('lobby');
   loadMatch();
 });
 
 socket.on('countdown_start', ({ matchId }) => {
-  showToast('⏱ Contagem regressiva iniciando!');
-  switchTab('match');
+  showToast('⏱ Contagem regressiva!');
+  switchTab('lobby');
   startCountdown();
 });
 
 socket.on('result_request', ({ matchId, team }) => {
   showToast('🏁 Reporte o resultado!');
-  switchTab('match');
+  switchTab('lobby');
   loadMatch();
 });
 
 function setConnected(ok) {
-  document.getElementById('conn-dot').style.background    = ok ? 'var(--green)' : 'var(--red)';
-  document.getElementById('conn-dot').style.boxShadow     = ok ? '0 0 8px var(--green)' : 'none';
-  document.getElementById('conn-label').textContent       = ok ? 'ao vivo' : 'desconectado';
-  document.getElementById('conn-label').style.color       = ok ? 'var(--green)' : 'var(--red)';
+  const dot   = document.getElementById('conn-dot');
+  const label = document.getElementById('conn-label');
+  dot.style.background  = ok ? 'var(--green)' : 'var(--red)';
+  dot.style.boxShadow   = ok ? '0 0 6px var(--green)' : 'none';
+  label.textContent     = ok ? 'ao vivo' : 'desconectado';
+  label.style.color     = ok ? 'var(--green)' : 'var(--red)';
+}
+
+function updateHeaderStatus() {
+  if (!globalState) return;
+  const s = globalState;
+  const el = document.getElementById('header-status-text');
+  const connDot   = document.getElementById('conn-dot');
+  const connLabel = document.getElementById('conn-label');
+  const connHtml  = `<span class="status-pill">${connDot.outerHTML}${connLabel.outerHTML}</span>`;
+
+  el.innerHTML = `
+    <span class="status-pill"><span class="dot dot-green"></span><span class="g">${s.online}</span>&nbsp;<span class="dim">online</span></span>
+    <span class="dim">·</span>
+    <span class="status-pill"><span class="dot dot-blue"></span><span class="b">${s.searching}</span>&nbsp;<span class="dim">buscando</span></span>
+    <span class="dim">·</span>
+    <span class="status-pill"><span class="dot dot-purple"></span><span class="p">${s.inGame}</span>&nbsp;<span class="dim">em jogo</span></span>
+    <span class="dim">·</span>
+    <span class="status-pill" id="conn-status"><span class="dot" id="conn-dot" style="background:var(--green);box-shadow:0 0 6px var(--green)"></span><span id="conn-label" style="color:var(--green)">ao vivo</span></span>
+  `;
 }
 
 // ─── TABS ─────────────────────────────────────────────────────────────────────
@@ -473,7 +588,6 @@ function switchTab(name) {
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
   document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id === `page-${name}`));
   if (name === 'lobby')   { loadState(); renderLobby(); }
-  if (name === 'match')   loadMatch();
   if (name === 'profile') loadProfile();
   if (name === 'ranking') { loadState(); renderRanking(); }
 }
@@ -484,11 +598,24 @@ async function loadState() {
     const r = await fetch('/api/state');
     globalState = await r.json();
   } catch(e) {}
+  updateHeaderStatus();
   renderLobby();
   renderRanking();
 }
 
-async function loadProfile() {
+async function loadProfile(searchNick) {
+  const el = document.getElementById('page-profile');
+  if (searchNick) {
+    // Busca por nick
+    try {
+      const r = await fetch(`/api/player/nick/${encodeURIComponent(searchNick)}`);
+      const data = r.ok ? await r.json() : null;
+      renderProfileData(el, data, false, searchNick);
+    } catch(e) {
+      renderProfileData(el, null, false, searchNick);
+    }
+    return;
+  }
   if (!USER_ID) { renderProfile(null); return; }
   markPresence();
   try {
@@ -499,130 +626,295 @@ async function loadProfile() {
 }
 
 async function loadMatch() {
-  if (!USER_ID) { renderMatch(null); return; }
+  if (!USER_ID) { renderMatchInLobby(null); return; }
   try {
     const r = await fetch(`/api/match/${USER_ID}`);
     matchData = r.ok ? await r.json() : { inMatch: false };
   } catch(e) { matchData = { inMatch: false }; }
-  renderMatch(matchData);
+  renderMatchInLobby(matchData);
 }
 
 async function markPresence() {
   if (!USER_ID) return;
-  try { await fetch('/api/presence', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ telegramId: USER_ID }) }); }
-  catch(e) {}
+  lastActivityTs = Date.now();
+  try {
+    await fetch('/api/presence', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ telegramId: USER_ID })
+    });
+  } catch(e) {}
 }
 
-// ─── RENDER: LOBBY ────────────────────────────────────────────────────────────
+// ─── QUEUE ACTIONS ────────────────────────────────────────────────────────────
+async function joinQueue(mode) {
+  if (!USER_ID) { showToast('⚠ Abra pelo Telegram'); return; }
+  const btn3 = document.getElementById('btn-join-3v3');
+  const btn5 = document.getElementById('btn-join-5v5');
+  if (btn3) btn3.disabled = true;
+  if (btn5) btn5.disabled = true;
+
+  try {
+    const r = await fetch('/api/queue/join', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ telegramId: USER_ID, mode })
+    });
+    const data = await r.json();
+    if (data.ok) {
+      myStatus = `queue${mode}`;
+      lastActivityTs = Date.now();
+      showToast(`✅ Entrou na fila ${mode}`);
+      if (tg) tg.HapticFeedback?.impactOccurred('medium');
+      await loadState();
+      await loadPlayerData();
+      renderLobby();
+    } else {
+      showToast(`⚠ ${data.error || 'Erro ao entrar na fila'}`);
+      if (btn3) btn3.disabled = false;
+      if (btn5) btn5.disabled = false;
+    }
+  } catch(e) {
+    showToast('⚠ Erro de conexão');
+    if (btn3) btn3.disabled = false;
+    if (btn5) btn5.disabled = false;
+  }
+}
+
+async function leaveQueue() {
+  if (!USER_ID) return;
+  const btnLeave = document.getElementById('btn-leave-queue');
+  if (btnLeave) btnLeave.disabled = true;
+
+  try {
+    const r = await fetch('/api/queue/leave', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ telegramId: USER_ID })
+    });
+    const data = await r.json();
+    if (data.ok) {
+      myStatus = 'online';
+      showToast('✅ Saiu da fila');
+      if (tg) tg.HapticFeedback?.impactOccurred('light');
+      await loadState();
+      await loadPlayerData();
+      renderLobby();
+    } else {
+      showToast(`⚠ ${data.error || 'Erro'}`);
+      if (btnLeave) btnLeave.disabled = false;
+    }
+  } catch(e) {
+    showToast('⚠ Erro de conexão');
+    if (btnLeave) btnLeave.disabled = false;
+  }
+}
+
+async function setStatus(status) {
+  if (!USER_ID) return;
+  const btn = document.getElementById(`btn-set-${status}`);
+  if (btn) btn.disabled = true;
+
+  try {
+    const r = await fetch('/api/status', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ telegramId: USER_ID, status })
+    });
+    const data = await r.json();
+    if (data.ok) {
+      myStatus = status;
+      lastActivityTs = status === 'online' ? Date.now() : lastActivityTs;
+      showToast(status === 'online' ? '🟢 Você está online' : '💤 Você está ausente');
+      if (tg) tg.HapticFeedback?.impactOccurred('light');
+      await loadState();
+      await loadPlayerData();
+      renderLobby();
+    } else {
+      showToast(`⚠ ${data.error || 'Erro'}`);
+      if (btn) btn.disabled = false;
+    }
+  } catch(e) {
+    showToast('⚠ Erro de conexão');
+    if (btn) btn.disabled = false;
+  }
+}
+
+async function loadPlayerData() {
+  if (!USER_ID) return;
+  try {
+    const r = await fetch(`/api/player/${USER_ID}`);
+    playerData = r.ok ? await r.json() : null;
+  } catch(e) {}
+}
+
+// ─── RENDER: LOBBY (SAGUÃO + PARTIDA) ────────────────────────────────────────
 function renderLobby() {
   const el = document.getElementById('page-lobby');
+
+  // Se há partida ativa, mostra a tela de partida
+  if (matchData && matchData.inMatch) {
+    renderMatchInLobby(matchData);
+    return;
+  }
+
   if (!globalState) {
     el.innerHTML = `<div class="loading"><div class="spinner"></div><span>Carregando...</span></div>`;
     return;
   }
+
   const s = globalState;
-  
-  // Get player info if available
-  let playerInfo = '';
+  const inQueue3 = playerData?.inQueue3v3 || false;
+  const inQueue5 = playerData?.inQueue5v5 || false;
+  const inQueue  = inQueue3 || inQueue5;
+  const isAway   = playerData ? !playerData.online && !inQueue : false;
+
+  // Status badge do jogador
+  let statusBadge = '';
+  if (inQueue3) statusBadge = `<span class="online-badge badge-queue">◈ BUSCANDO 3v3</span>`;
+  else if (inQueue5) statusBadge = `<span class="online-badge badge-queue">◈ BUSCANDO 5v5</span>`;
+  else if (isAway) statusBadge = `<span class="online-badge badge-away">💤 AUSENTE</span>`;
+  else if (playerData) statusBadge = `<span class="online-badge badge-online">⬤ ONLINE</span>`;
+
+  // Info do jogador
+  let playerBlock = '';
   if (playerData) {
-    playerInfo = `<span class="dim">👤 JOGADOR</span>
-<span class="w">   ${playerData.nick}</span>
-<span class="dim">   FC:</span> <span class="y">${playerData.fc || '?'}</span>  <span class="dim">|  Rank:</span> <span class="p">#${playerData.rank || '?'} BR</span>`;
+    playerBlock = `
+    <div class="player-block">
+      <div class="player-nick">${playerData.nick}</div>
+      <div class="player-meta">
+        <span class="player-fc">${playerData.fc || '?'}</span>
+        <span class="player-rank">#${playerData.rank || '?'} BR</span>
+        ${statusBadge}
+      </div>
+    </div>`;
   }
 
-  let html = `<div class="card"><span class="y">⚡ VG MATCHMAKING BR</span>
-<span class="dim">━━━━━━━━━━━━━━━━━━━━━━</span>
+  // Filas
+  const queueBlock = `
+  <div class="queue-status">
+    <div class="section-title">Filas Abertas</div>
+    <div class="queue-row">
+      <div>
+        <div class="queue-label">🎯 3v3 Casual</div>
+        <div class="queue-sub">Casual · 6 jogadores</div>
+      </div>
+      <div style="text-align:right">
+        <div class="queue-count g">${s.queue3v3}<span class="dim" style="font-size:12px">/6</span></div>
+      </div>
+    </div>
+    <div class="queue-row">
+      <div>
+        <div class="queue-label">🔥 5v5 Ranked</div>
+        <div class="queue-sub">Ranked · 10 jogadores</div>
+      </div>
+      <div style="text-align:right">
+        <div class="queue-count b">${s.queue5v5}<span class="dim" style="font-size:12px">/10</span></div>
+      </div>
+    </div>
+  </div>`;
 
-${playerInfo}
-${playerInfo ? '<span class="dim">━━━━━━━━━━━━━━━━━━━━━━</span>' : ''}
+  // Botões de ação
+  let actionButtons = '';
+  if (!playerData) {
+    actionButtons = `<div style="color:var(--text-dim);text-align:center;padding:16px 0;font-size:12px">Use /start no bot para se registrar</div>`;
+  } else if (inQueue) {
+    // Em fila: mostrar apenas "Sair da Fila"
+    actionButtons = `
+    <div class="btn-row">
+      <button class="btn btn-red btn-full" id="btn-leave-queue" onclick="leaveQueue()">
+        ❌ Sair da Fila
+      </button>
+    </div>`;
+  } else if (isAway) {
+    // Ausente: mostrar apenas "Ficar Online"
+    actionButtons = `
+    <div class="btn-row">
+      <button class="btn btn-green btn-full" id="btn-set-online" onclick="setStatus('online')">
+        🟢 Ficar Online
+      </button>
+    </div>`;
+  } else {
+    // Online: mostrar Entrar 3v3, Entrar 5v5 e Ficar Ausente
+    actionButtons = `
+    <div class="btn-row">
+      <button class="btn btn-green" id="btn-join-3v3" onclick="joinQueue('3v3')">
+        🎯 Entrar 3v3
+      </button>
+      <button class="btn btn-blue" id="btn-join-5v5" onclick="joinQueue('5v5')">
+        🔥 Entrar 5v5
+      </button>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-gray btn-full" id="btn-set-away" onclick="setStatus('away')">
+        💤 Ficar Ausente
+      </button>
+    </div>`;
+  }
 
-<span class="dim">📡 STATUS ATUAL</span>
-<span class="g">   ⬤ Online</span>     <span class="w">${s.online}</span> <span class="dim">jogadores</span>
-<span class="b">   ◈ Buscando</span>   <span class="w">${s.searching}</span> <span class="dim">jogadores</span>
-<span class="p">   ⬡ Em Jogo</span>    <span class="w">${s.inGame}</span> <span class="dim">partida(s)</span>
-<span class="dim">━━━━━━━━━━━━━━━━━━━━━━</span>
-
-<span class="dim">⚔  FILAS ABERTAS</span>
-<span class="g">   3v3 Casual</span>  <span class="y">${s.queue3v3}</span><span class="dim">/6</span>
-<span class="dim">   5v5 Ranked   ${s.queue5v5}/10</span>
-<span class="dim">━━━━━━━━━━━━━━━━━━━━━━</span>
-
-<span class="dim">🎯 ENTRAR 3v3   ⚡ ENTRAR 5v5</span>
-<span class="dim">❌ SAIR DA FILA    👤 PERFIL</span></div>`;
-
-  el.innerHTML = html;
+  el.innerHTML = `
+    ${playerBlock}
+    <hr class="sep">
+    ${queueBlock}
+    <hr class="sep">
+    <div class="section-title">Ações</div>
+    ${actionButtons}
+  `;
 }
 
-// ─── RENDER: MATCH ────────────────────────────────────────────────────────────
-function renderMatch(data) {
-  const el = document.getElementById('page-match');
-  if (!data) {
-    el.innerHTML = `<div class="loading"><div class="spinner"></div></div>`;
-    return;
-  }
-  if (!data.inMatch) {
-    el.innerHTML = `<div class="card" style="text-align:center;padding:30px">
-<div style="font-size:40px;margin-bottom:12px">⏳</div>
-<div style="color:var(--white);font-size:16px">Nenhuma partida ativa</div>
-<div style="color:var(--text-dim);margin-top:6px">Entre em uma fila pelo bot para encontrar uma partida</div>
-</div>`;
+// ─── RENDER: MATCH (dentro da aba Saguão) ────────────────────────────────────
+function renderMatchInLobby(data) {
+  const el = document.getElementById('page-lobby');
+  if (!data || !data.inMatch) {
+    // Sem partida: renderiza o saguão normal
+    matchData = { inMatch: false };
+    renderLobby();
     return;
   }
 
-  const allies = (data.allies || []).map(a => `<span class="dim">   ▸</span> <span class="w">${a.nick}</span>    <span class="dim">FC ${a.fc}</span>`).join('\n');
-  const enemies = Array.from({ length: data.total / 2 }, () => '<span class="dim">   ▸ oculto</span>').join(' ');
-  
+  const allies = (data.allies || []).map(a =>
+    `<div class="ally-row"><span class="ally-nick">▸ ${a.nick}</span><span class="ally-fc">${a.fc}</span></div>`
+  ).join('');
+
+  const confirmDots = Array.from({ length: data.total }, (_, i) => {
+    const done = i < data.confirmed;
+    return `<div class="confirm-dot ${done ? 'done' : ''}">${done ? '✔' : ''}</div>`;
+  }).join('');
+
   const confirmStatus = data.iConfirmed
-    ? `<span class="g">✅ Nick alterado</span>`
-    : `<span class="r">❌ Não consigo mudar</span>`;
+    ? `<span class="g">✅ Nick alterado — aguardando outros</span>`
+    : `<span class="y">⚠ Mude seu nick e confirme no bot</span>`;
 
-  const confirmDots = Array.from({ length: data.total }, (_, i) =>
-    i < data.confirmed ? '<span class="g">✔</span>' : '<span class="dim">□</span>'
-  ).join(' ');
+  el.innerHTML = `
+    <div class="match-banner">
+      <div class="match-title">⚔ PARTIDA ENCONTRADA</div>
+      <div class="match-id">#${data.matchId} · ${data.mode === '3v3' ? '3v3 Casual' : '5v5 Ranked'}</div>
+      <div style="color:var(--text-dim);font-size:11px;margin-bottom:6px">SNIPING CODE</div>
+      <div class="sniping-code">${data.snipingCode}</div>
+      <div style="color:var(--text-dim);font-size:11px;margin-top:10px;margin-bottom:4px">MUDE SEU NICK PARA</div>
+      <div class="nick-format">${data.myNickFormat}SeuNick</div>
+    </div>
 
-  el.innerHTML = `<div class="card"><span class="y">⚔  PARTIDA ENCONTRADA</span>
-<span class="dim">━━━━━━━━━━━━━━━━━━━━━━</span>
+    <div class="section-title">Seu Time 🟦</div>
+    <div style="margin-bottom:20px">${allies}</div>
 
-<span class="dim">🆔 ID DA PARTIDA</span>
-<span class="w">   #${data.matchId}</span>  <span class="dim">|  Modo:</span> <span class="g">${data.mode === '3v3' ? '3v3 Casual' : '5v5 Ranked'}</span>
-<span class="dim">━━━━━━━━━━━━━━━━━━━━━━</span>
+    <div class="section-title">Adversários 🟥</div>
+    <div style="color:var(--text-dim);font-size:13px;margin-bottom:20px">
+      ${Array.from({ length: data.total / 2 }, () => '<div style="padding:10px 0;border-bottom:1px solid var(--border)">▸ <span style="color:var(--text-dim)">oculto</span></div>').join('')}
+    </div>
 
-<span class="g">🟦 SEU TIME</span>
-${allies}
+    <div class="section-title">Confirmações (${data.confirmed}/${data.total})</div>
+    <div class="confirm-dots">${confirmDots}</div>
+    <div style="text-align:center;margin-top:8px;margin-bottom:20px;font-size:13px">${confirmStatus}</div>
 
-<span class="r">🟥 ADVERSÁRIOS</span>
-<span class="dim">   ▸ oculto ▸ oculto ▸ oculto</span>
-<span class="dim">━━━━━━━━━━━━━━━━━━━━━━</span>
-
-<span class="dim">🎯 SNIPING CODE</span>
-<span class="w">   ${data.snipingCode}</span>
-
-<span class="dim">📝 MUDE SEU NICK PARA</span>
-<span class="g">   ${data.myNickFormat}SeuNick</span>
-<span class="dim">━━━━━━━━━━━━━━━━━━━━━━</span>
-
-<span class="dim">✅ CONFIRMAÇÕES</span>
-<span class="dim">   </span><span class="g">${confirmDots}</span><span class="dim">  (${data.confirmed}/${data.total})</span>
-
-<span class="dim">━━━━━━━━━━━━━━━━━━━━━━</span>
-${confirmStatus}</div>
-
-<div id="countdown-section" style="display:none" class="card"><span class="y">⚔  PARTIDA #${data.matchId}</span>
-<span class="dim">━━━━━━━━━━━━━━━━━━━━━━</span>
-
-<span class="g">✔ Todos confirmados!</span>
-<span class="dim">━━━━━━━━━━━━━━━━━━━━━━</span>
-
-<span class="dim">⏱ BUSCA INICIANDO EM</span>
-
-<span class="w">          <span id="cd-num">10</span></span>
-
-<span class="b">   <span id="cd-bar">██████████░░░░░░░░░░</span></span>
-<span class="dim">━━━━━━━━━━━━━━━━━━━━━━</span>
-
-<span class="y">⚡ Preparem-se para buscar</span>
-<span class="dim">   Abram a sala e busquem</span>
-<span class="dim">   com o sniping code acima</span></div>`;
+    <div id="countdown-section" style="display:none">
+      <hr class="sep">
+      <div class="section-title">⏱ Busca Iniciando Em</div>
+      <div class="countdown-num" id="cd-num">10</div>
+      <div class="progress-bar"><div class="progress-fill" id="cd-bar" style="width:0%"></div></div>
+      <div style="text-align:center;color:var(--yellow);font-size:14px;font-weight:700;margin-top:8px">⚡ Preparem-se para buscar!</div>
+    </div>
+  `;
 }
 
 function startCountdown() {
@@ -636,8 +928,8 @@ function startCountdown() {
     const barEl = document.getElementById('cd-bar');
     if (numEl) numEl.textContent = countdownVal;
     if (barEl) {
-      const filled = Math.round((10 - countdownVal) / 10 * 20);
-      barEl.textContent = '█'.repeat(filled) + '░'.repeat(20 - filled);
+      const pct = Math.round((10 - countdownVal) / 10 * 100);
+      barEl.style.width = pct + '%';
     }
     if (countdownVal <= 0) {
       clearInterval(countdownInt);
@@ -650,71 +942,127 @@ function startCountdown() {
 // ─── RENDER: PROFILE ──────────────────────────────────────────────────────────
 function renderProfile(data) {
   const el = document.getElementById('page-profile');
+  renderProfileData(el, data, true, null);
+}
 
-  if (!USER_ID) {
-    el.innerHTML = `<div class="not-registered">
-<div class="icon">🤖</div>
-<div style="color:var(--white);font-size:16px">Abra pelo Telegram</div>
-<div>Acesse via bot para ver seu perfil</div>
-</div>`;
+function renderProfileData(el, data, isOwn, searchedNick) {
+  // Caixa de busca sempre presente
+  const searchBox = `
+    <div class="search-box">
+      <input type="text" class="search-input" id="nick-search-input" placeholder="Buscar jogador por nick..." />
+      <button class="btn btn-blue" style="flex:none;padding:14px 18px;" onclick="searchPlayer()">🔍</button>
+    </div>
+  `;
+
+  if (!USER_ID && isOwn) {
+    el.innerHTML = searchBox + `<div class="empty-state">
+      <div class="icon">🤖</div>
+      <div class="title">Abra pelo Telegram</div>
+      <div>Acesse via bot para ver seu perfil</div>
+    </div>`;
+    return;
+  }
+
+  if (searchedNick && !data) {
+    el.innerHTML = searchBox + `<div class="empty-state">
+      <div class="icon">🔍</div>
+      <div class="title">Jogador não encontrado</div>
+      <div>Nenhum jogador com nick "<span class="y">${searchedNick}</span>"</div>
+    </div>`;
+    return;
+  }
+
+  if (!data && isOwn) {
+    el.innerHTML = searchBox + `<div class="empty-state">
+      <div class="icon">❓</div>
+      <div class="title">Não registrado</div>
+      <div>Use /start no bot para criar seu perfil</div>
+    </div>`;
     return;
   }
 
   if (!data) {
-    el.innerHTML = `<div class="not-registered">
-<div class="icon">❓</div>
-<div style="color:var(--white);font-size:16px">Não registrado</div>
-<div>Use /start no bot para criar seu perfil</div>
-</div>`;
+    el.innerHTML = searchBox;
     return;
   }
 
   const isPenalty = data.penalty;
-  let html = '';
-
+  let penaltyBlock = '';
   if (isPenalty) {
     const exp = data.penaltyUntil ? new Date(data.penaltyUntil).toLocaleString('pt-BR') : '?';
-    html += `<div class="card"><span class="r">💀 JOGADOR PENALIZADO</span>
-<span class="dim">━━━━━━━━━━━━━━━━━━━━━━</span>
-
-<span class="dim">👤 JOGADOR</span>
-<span class="w">   ${data.nick}</span>
-<span class="dim">━━━━━━━━━━━━━━━━━━━━━━</span>
-
-<span class="dim">⚠️  PUNIÇÃO APLICADA</span>
-<span class="dim">   Motivo</span>    <span class="r">Não confirmou</span>
-<span class="dim">   Duração</span>   <span class="y">7 dias</span>
-<span class="dim">   Derrota</span>   <span class="r">+2 registradas</span>
-<span class="dim">━━━━━━━━━━━━━━━━━━━━━━</span>
-
-<span class="dim">📊 FC ATUAL</span>
-<span class="r">   💀 BLOQUEADO</span>
-
-<span class="dim">📅 EXPIRA EM</span>
-<span class="y">   ${exp}</span></div>`;
+    penaltyBlock = `
+    <div class="penalty-card">
+      <div class="penalty-title">💀 JOGADOR PENALIZADO</div>
+      <div style="color:var(--text-dim);font-size:12px;margin-top:6px">Motivo: Não confirmou a partida</div>
+      <div class="penalty-exp">Expira em: ${exp}</div>
+    </div>`;
   }
 
-  html += `<div class="card"><span class="b">👤 PERFIL DO JOGADOR</span>
-<span class="dim">━━━━━━━━━━━━━━━━━━━━━━</span>
+  const wr = data.winRate || '0.0';
+  const fc = isPenalty ? '💀' : (data.fc || '?');
 
-<span class="dim">🎮 IDENTIDADE</span>
-<span class="w">   ${data.nick}</span>
-<span class="dim">   ID:</span> <span class="dim">${USER_ID}</span>
-<span class="dim">━━━━━━━━━━━━━━━━━━━━━━</span>
+  el.innerHTML = searchBox + penaltyBlock + `
+    <div class="player-block">
+      <div class="player-nick">${data.nick}</div>
+      <div class="player-meta" style="margin-top:6px">
+        <span class="player-fc">${fc}</span>
+        ${data.rank ? `<span class="player-rank">#${data.rank} BR</span>` : ''}
+        ${isOwn ? `<span class="online-badge ${data.online ? 'badge-online' : 'badge-offline'}">${data.online ? '⬤ ONLINE' : '○ OFFLINE'}</span>` : ''}
+      </div>
+    </div>
 
-<span class="dim">📊 ESTATÍSTICAS</span>
-<span class="dim">   FC</span>        <span class="y">${data.fc || '?'}</span>
-<span class="dim">   Vitórias</span>  <span class="g">${data.wins}</span>
-<span class="dim">   Derrotas</span>  <span class="r">${data.losses}</span>
-<span class="dim">   Partidas</span>  <span class="w">${data.games}</span>
-<span class="dim">   Win Rate</span>  <span class="b">${data.winRate}%</span>
-<span class="dim">━━━━━━━━━━━━━━━━━━━━━━</span>
+    <hr class="sep">
 
-<span class="dim">🏆 RANKING</span>
-<span class="p">   #${data.rank || '?'} BR</span>  <span class="dim">de ${data.totalRanked || '?'} jogadores</span></div>`;
+    <div class="section-title">Estatísticas</div>
+    <div class="stats-grid">
+      <div class="stat-box">
+        <div class="stat-box-val g">${data.wins}</div>
+        <div class="stat-box-lbl">VITÓRIAS</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-box-val r">${data.losses}</div>
+        <div class="stat-box-lbl">DERROTAS</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-box-val w">${data.games}</div>
+        <div class="stat-box-lbl">PARTIDAS</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-box-val b">${wr}%</div>
+        <div class="stat-box-lbl">WIN RATE</div>
+      </div>
+    </div>
 
-  el.innerHTML = html;
+    <hr class="sep">
+
+    <div class="section-title">Ranking</div>
+    <div style="display:flex;align-items:center;gap:14px;padding:10px 0">
+      <span style="font-size:32px">🏆</span>
+      <div>
+        <div style="color:var(--purple);font-size:22px;font-weight:700">#${data.rank || '?'} BR</div>
+        <div style="color:var(--text-dim);font-size:12px">de ${data.totalRanked || '?'} jogadores ranqueados</div>
+      </div>
+    </div>
+  `;
 }
+
+function searchPlayer() {
+  const input = document.getElementById('nick-search-input');
+  const nick  = input?.value?.trim();
+  if (!nick) {
+    // Volta para o perfil próprio
+    loadProfile();
+    return;
+  }
+  loadProfile(nick);
+}
+
+// Permite buscar pressionando Enter
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && activeTab === 'profile') {
+    searchPlayer();
+  }
+});
 
 // ─── RENDER: RANKING ──────────────────────────────────────────────────────────
 function renderRanking() {
@@ -726,19 +1074,27 @@ function renderRanking() {
 
   const medals = ['🥇','🥈','🥉'];
   const rows = globalState.ranking.map((p, i) => {
-    const medal = i < 3 ? medals[i] : ` ${i + 1}`;
+    const medal = i < 3 ? medals[i] : `${i + 1}`;
     const fc = p.penalty ? '💀' : p.fc;
-    return `<span class="dim">   ${medal}</span> <span class="w">${p.nick}</span>      <span class="g">${fc}</span>  <span class="dim">${p.games}</span>`;
-  }).join('\n');
+    const wr = p.games > 0 ? ((p.wins / p.games) * 100).toFixed(1) : '0.0';
+    return `
+    <div class="rank-row">
+      <div class="rank-pos">${medal}</div>
+      <div class="rank-info">
+        <div class="rank-nick">${p.nick}</div>
+        <div class="rank-sub">${p.games} partidas · ${wr}% WR</div>
+      </div>
+      <div class="rank-fc">${fc}</div>
+    </div>`;
+  }).join('');
 
-  el.innerHTML = `<div class="card"><span class="y">🏆 TOP PLAYERS BR</span>
-<span class="dim">━━━━━━━━━━━━━━━━━━━━━━</span>
-
-<span class="dim">   NICK         FC    JOGOS</span>
-<span class="dim">   ──────────────────────</span>
-${rows}
-<span class="dim">   ──────────────────────</span>
-<span class="dim">   Mín. 10 partidas para rankear</span></div>`;
+  el.innerHTML = `
+    <div class="section-title">Top Players BR</div>
+    ${rows}
+    <div style="color:var(--text-dim);font-size:11px;text-align:center;margin-top:18px;padding-top:14px;border-top:1px solid var(--border)">
+      Mín. 10 partidas para rankear
+    </div>
+  `;
 }
 
 // ─── TOAST ────────────────────────────────────────────────────────────────────
@@ -750,17 +1106,38 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 3000);
 }
 
+// ─── AUTO AWAY (2 min sem atividade) ─────────────────────────────────────────
+setInterval(() => {
+  if (!USER_ID) return;
+  const now = Date.now();
+  const twoMin = 2 * 60 * 1000;
+  // Se passou 2 min sem atividade e está online (não em fila, não em partida)
+  if (myStatus === 'online' && (now - lastActivityTs) > twoMin) {
+    setStatus('away');
+  }
+}, 30 * 1000);
+
+// Registra atividade em interações do usuário
+document.addEventListener('touchstart', () => { lastActivityTs = Date.now(); }, { passive: true });
+document.addEventListener('click', () => { lastActivityTs = Date.now(); }, { passive: true });
+
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 markPresence();
 loadState();
-loadProfile();
+loadPlayerData().then(() => renderLobby());
+loadMatch();
 
 // Refresca presença a cada 60s
 setInterval(markPresence, 60 * 1000);
+
 // Refresca dados a cada 15s como fallback
-setInterval(() => {
-  loadState();
-  if (activeTab === 'match') loadMatch();
+setInterval(async () => {
+  await loadState();
+  await loadPlayerData();
+  if (activeTab === 'lobby') {
+    await loadMatch();
+    renderLobby();
+  }
 }, 15 * 1000);
 </script>
 </body>
