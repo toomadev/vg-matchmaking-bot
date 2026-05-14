@@ -1,4 +1,4 @@
-const { initDB }    = require('./database');
+const { initDB }    = require('../database');
 const { startServer } = require('./server');
 const { startBot }    = require('./bot');
 
