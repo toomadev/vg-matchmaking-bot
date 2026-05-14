@@ -791,25 +791,27 @@ function renderLobby() {
   }
 
   // Filas
+  const queue3Highlight = inQueue3 ? ' style="background:var(--green-dim);border:2px solid var(--green);border-radius:12px;padding:12px;margin:-12px"' : '';
+  const queue5Highlight = inQueue5 ? ' style="background:var(--blue-dim);border:2px solid var(--blue);border-radius:12px;padding:12px;margin:-12px"' : '';
   const queueBlock = `
   <div class="queue-status">
     <div class="section-title">Filas Abertas</div>
-    <div class="queue-row">
+    <div class="queue-row"${queue3Highlight}>
       <div>
-        <div class="queue-label">🎯 3v3 Casual</div>
-        <div class="queue-sub">Casual · 6 jogadores</div>
+        <div class="queue-label" style="font-size:20px;font-weight:700">🎯 3v3 Ranked</div>
+        <div class="queue-sub">Ranked · 6 jogadores</div>
       </div>
       <div style="text-align:right">
-        <div class="queue-count g">${s.queue3v3}<span class="dim" style="font-size:12px">/6</span></div>
+        <div class="queue-count g" style="font-size:28px">${s.queue3v3}<span class="dim" style="font-size:14px">/6</span></div>
       </div>
     </div>
-    <div class="queue-row">
+    <div class="queue-row"${queue5Highlight}>
       <div>
-        <div class="queue-label">🔥 5v5 Ranked</div>
-        <div class="queue-sub">Ranked · 10 jogadores</div>
+        <div class="queue-label" style="font-size:20px;font-weight:700">🔥 5v5 Casual</div>
+        <div class="queue-sub">Casual · 10 jogadores</div>
       </div>
       <div style="text-align:right">
-        <div class="queue-count b">${s.queue5v5}<span class="dim" style="font-size:12px">/10</span></div>
+        <div class="queue-count b" style="font-size:28px">${s.queue5v5}<span class="dim" style="font-size:14px">/10</span></div>
       </div>
     </div>
   </div>`;
@@ -839,10 +841,10 @@ function renderLobby() {
     actionButtons = `
     <div class="btn-row">
       <button class="btn btn-green" id="btn-join-3v3" onclick="joinQueue('3v3')">
-        🎯 Entrar 3v3
+        🎯 Entrar 3v3 Ranked
       </button>
       <button class="btn btn-blue" id="btn-join-5v5" onclick="joinQueue('5v5')">
-        🔥 Entrar 5v5
+        🔥 Entrar 5v5 Casual
       </button>
     </div>
     <div class="btn-row">
@@ -888,14 +890,14 @@ function renderMatchInLobby(data) {
   el.innerHTML = `
     <div class="match-banner">
       <div class="match-title">⚔ PARTIDA ENCONTRADA</div>
-      <div class="match-id">#${data.matchId} · ${data.mode === '3v3' ? '3v3 Casual' : '5v5 Ranked'}</div>
+      <div class="match-id">#${data.matchId} · ${data.mode === '3v3' ? '3v3 Ranked' : '5v5 Casual'}</div>
       <div style="color:var(--text-dim);font-size:11px;margin-bottom:6px">SNIPING CODE</div>
       <div class="sniping-code">${data.snipingCode}</div>
       <div style="color:var(--text-dim);font-size:11px;margin-top:10px;margin-bottom:4px">MUDE SEU NICK PARA</div>
       <div class="nick-format">${data.myNickFormat}SeuNick</div>
     </div>
 
-    <div class="section-title">Seu Time 🟦</div>
+    <div class="section-title">Seu Time 🟦 (${data.mode === '3v3' ? '3v3 Ranked' : '5v5 Casual'})</div>
     <div style="margin-bottom:20px">${allies}</div>
 
     <div class="section-title">Adversários 🟥</div>
