@@ -6,7 +6,7 @@ process.env.NODE_NO_WARNINGS = '1';
 const { initDB }           = require('./database');
 const { loadActiveMatches } = require('./matchmaking');
 const { startServer }      = require('./server');
-const { startBot }         = require('./bot/index');
+const { startBot }         = require('./bot');
 
 (async () => {
     try {
