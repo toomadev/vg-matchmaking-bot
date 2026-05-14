@@ -39,7 +39,6 @@ async function initDB() {
             vg_index DECIMAL(10,2) DEFAULT 1000,
             penalty_until VARCHAR(64) DEFAULT NULL,
             is_admin BOOLEAN DEFAULT FALSE
-            penalty_until VARCHAR(64) DEFAULT NULL
         )
     `);
     await pool.execute(`
