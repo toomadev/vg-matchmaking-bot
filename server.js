@@ -4,8 +4,8 @@ const { Server } = require('socket.io');
 const path       = require('path');
 const cors       = require('cors');
 
-const { pool }                              = require('./database');
-const { queue3v3, queue5v5, activeMatches, addToQueue, removeFromQueue } = require('./matchmaking');
+const { pool } = require(path.join(__dirname, 'database'));
+const { queue3v3, queue5v5, activeMatches, addToQueue, removeFromQueue } = require(path.join(__dirname, 'matchmaking'));
 
 const app    = express();
 const server = http.createServer(app);
@@ -68,6 +68,18 @@ async function broadcastState() {
 
 async function notifyPlayer(telegramId, event, data) {
     io.to(`player_${telegramId}`).emit(event, data);
+}
+
+// ─── FUNÇÃO: Notificar o Bot de mudanças de estado ────────────────────────────
+async function notifyBotOfStateChange(telegramId = null) {
+    // Se um telegramId específico foi passado, notifica apenas esse jogador
+    if (telegramId) {
+        const state = await getGlobalState();
+        io.to(`player_${telegramId}`).emit('state_update', state);
+    } else {
+        // Caso contrário, faz broadcast para todos
+        await broadcastState();
+    }
 }
 
 // ─── API REST ─────────────────────────────────────────────────────────────────
@@ -206,6 +218,7 @@ app.post('/api/queue/join', async (req, res) => {
             return res.status(409).json({ error: 'cannot_join', message: 'Não foi possível entrar na fila.' });
         }
 
+        // Broadcast para todos + notificação específica
         await broadcastState();
         res.json({ ok: true, mode, queueSize: mode === '3v3' ? queue3v3.length : queue5v5.length });
     } catch (e) { res.status(500).json({ error: e.message }); }
@@ -254,6 +267,18 @@ app.post('/api/internal/broadcast', async (req, res) => {
     res.json({ ok: true });
 });
 
+// ─── ROTA INTERNA: bot notifica mudança de estado (sincronização) ─────────────
+app.post('/api/internal/notify-state-change', async (req, res) => {
+    if (req.body.secret !== process.env.INTERNAL_SECRET) return res.status(403).json({ error: 'forbidden' });
+    const { telegramId } = req.body;
+    if (telegramId) {
+        await notifyBotOfStateChange(Number(telegramId));
+    } else {
+        await broadcastState();
+    }
+    res.json({ ok: true });
+});
+
 // ─── ROTA: PRESENÇA via Mini App ─────────────────────────────────────────────
 app.post('/api/presence', async (req, res) => {
     const { telegramId } = req.body;
@@ -273,7 +298,11 @@ app.post('/api/presence', async (req, res) => {
 // ─── SOCKET.IO ────────────────────────────────────────────────────────────────
 io.on('connection', (socket) => {
     getGlobalState().then(state => socket.emit('state_update', state));
-    socket.on('join_player', (tid) => socket.join(`player_${tid}`));
+    socket.on('join_player', (tid) => {
+        socket.join(`player_${tid}`);
+        // Envia estado atualizado ao conectar
+        getGlobalState().then(state => socket.emit('state_update', state));
+    });
 });
 
 // ─── EXPORT ───────────────────────────────────────────────────────────────────
@@ -287,4 +316,4 @@ function startServer() {
     });
 }
 
-module.exports = { io, onlineUsers, lobbyMessages, broadcastState, notifyPlayer, formatFC, startServer };
+module.exports = { io, onlineUsers, lobbyMessages, broadcastState, notifyPlayer, formatFC, startServer, notifyBotOfStateChange };
