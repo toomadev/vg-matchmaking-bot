@@ -22,176 +22,164 @@ async function testTelegramConn() {
 function setupHandlers(bot) {
     const pendingNick = new Set();
 
-    // /start - Registra o usuário se necessário e abre o app
+    // /start - Tutorial em texto e botão WebApp
     bot.start(async (ctx) => {
         try {
-            console.log(`[BOT] /start recebido de ${ctx.from.id} (${ctx.from.username || 'sem username'})`);
             const [rows] = await pool.execute('SELECT * FROM players WHERE telegram_id = ?', [ctx.from.id]);
-            
             if (!rows[0]) {
-                // Novo usuário - pede o nick
-                console.log(`[BOT] Novo usuário ${ctx.from.id}, pedindo nick...`);
                 pendingNick.add(ctx.from.id);
                 return ctx.reply('👋 Bem-vindo ao VG Matchmaking BR!\n\nDigite seu nick para começar (3-16 caracteres):');
             }
-            
-            // Usuário já registrado - oferece o app
-            console.log(`[BOT] Usuário ${ctx.from.id} já registrado, enviando portal...`);
             await sendAppPortal(ctx);
         } catch (err) {
             console.error(`[BOT] Erro em /start:`, err);
-            ctx.reply('❌ Erro ao processar seu comando. Tente novamente.');
+            ctx.reply('❌ Erro ao processar seu comando.');
         }
     });
 
-    // /saguao - Abre o app
-    bot.command('saguao', async (ctx) => {
+    // /changenick - Muda o apelido do jogador
+    bot.command('changenick', async (ctx) => {
         try {
-            console.log(`[BOT] /saguao recebido de ${ctx.from.id}`);
-            await sendAppPortal(ctx);
+            const newNick = sanitizeInput(ctx.message.text.split(' ').slice(1).join(' '));
+            if (!newNick) return ctx.reply('Uso: /changenick NovoNick');
+            if (newNick.length < 3 || newNick.length > 16) return ctx.reply('Nick deve ter entre 3 e 16 caracteres.');
+
+            const [existing] = await pool.execute('SELECT * FROM players WHERE nickname = ?', [newNick]);
+            if (existing.length > 0) return ctx.reply('Este nick já está em uso.');
+
+            await pool.execute('UPDATE players SET nickname = ? WHERE telegram_id = ?', [newNick, ctx.from.id]);
+            ctx.reply(`✅ Seu nick foi alterado para <b>${newNick}</b>!`, { parse_mode: 'HTML' });
         } catch (err) {
-            console.error(`[BOT] Erro em /saguao:`, err);
+            ctx.reply('❌ Erro ao alterar nick.');
         }
     });
 
-    // /tutorial - Mostra o tutorial novamente
-    bot.command('tutorial', async (ctx) => {
+    // /report id_partida - Gera relatório de análise
+    bot.command('report', async (ctx) => {
         try {
-            console.log(`[BOT] /tutorial recebido de ${ctx.from.id}`);
-            await sendAppPortal(ctx);
+            const matchId = ctx.message.text.split(' ')[1];
+            if (!matchId) return ctx.reply('Uso: /report ID_DA_PARTIDA');
+
+            await pool.execute(
+                'INSERT INTO reports (match_id, reporter_id, reason) VALUES (?, ?, ?)',
+                [matchId, ctx.from.id, 'Relatório de análise solicitado pelo jogador.']
+            );
+            ctx.reply(`✅ Relatório da partida #${matchId} enviado para análise administrativa.`);
         } catch (err) {
-            console.error(`[BOT] Erro em /tutorial:`, err);
+            ctx.reply('❌ Erro ao enviar relatório.');
         }
     });
 
-    // Mensagens de texto - para registro de nick
+    // /relatorio - Apenas para admins: mostra relatórios pendentes
+    bot.command('relatorio', async (ctx) => {
+        try {
+            const [adminCheck] = await pool.execute('SELECT is_admin FROM players WHERE telegram_id = ?', [ctx.from.id]);
+            if (!adminCheck[0]?.is_admin) return ctx.reply('Comando restrito a administradores.');
+
+            const [reports] = await pool.execute('SELECT * FROM reports WHERE status = "pending" LIMIT 5');
+            if (reports.length === 0) return ctx.reply('Nenhum relatório pendente.');
+
+            for (const report of reports) {
+                const [match] = await pool.execute('SELECT * FROM active_matches WHERE match_id = ?', [report.match_id]);
+                if (!match[0]) continue;
+
+                const teamA = JSON.parse(match[0].team_a_ids);
+                const teamB = JSON.parse(match[0].team_b_ids);
+                const allPlayers = [...teamA, ...teamB];
+
+                const buttons = allPlayers.map(p => [
+                    Markup.button.callback(`Punir ${p.name}`, `punish_${p.id}_${report.id}`),
+                    Markup.button.callback(`Inocentar ${p.name}`, `clear_${p.id}_${report.id}`)
+                ]);
+
+                await ctx.reply(
+                    `🚩 <b>Relatório #${report.id} - Partida #${report.match_id}</b>\nMotivo: ${report.reason}`,
+                    { parse_mode: 'HTML', ...Markup.inlineKeyboard(buttons) }
+                );
+            }
+        } catch (err) {
+            ctx.reply('❌ Erro ao buscar relatórios.');
+        }
+    });
+
+    // Callback para punição/inocência
+    bot.action(/punish_(\d+)_(\d+)/, async (ctx) => {
+        const targetId = ctx.match[1];
+        const reportId = ctx.match[2];
+        const fraudUntil = new Date();
+        fraudUntil.setDate(fraudUntil.getDate() + 7);
+
+        await pool.execute(
+            'UPDATE players SET fraud_penalty_until = ?, losses = losses + 2, games = games + 2 WHERE telegram_id = ?',
+            [fraudUntil.toISOString().slice(0, 19).replace('T', ' '), targetId]
+        );
+        await pool.execute('UPDATE reports SET status = "resolved" WHERE id = ?', [reportId]);
+        ctx.answerCbQuery('Jogador punido com 💀, exposição por 7 dias e +2 derrotas.');
+        ctx.editMessageText('✅ Punição aplicada com sucesso.');
+    });
+
+    bot.action(/clear_(\d+)_(\d+)/, async (ctx) => {
+        const reportId = ctx.match[2];
+        await pool.execute('UPDATE reports SET status = "resolved" WHERE id = ?', [reportId]);
+        ctx.answerCbQuery('Jogador inocentado.');
+        ctx.editMessageText('✅ Relatório arquivado sem punições.');
+    });
+
     bot.on('text', async (ctx, next) => {
-        try {
-            if (!pendingNick.has(ctx.from.id)) {
-                return next();
-            }
+        if (!pendingNick.has(ctx.from.id)) return next();
+        const nick = sanitizeInput(ctx.message.text);
+        if (nick.startsWith('/')) return next();
+        if (nick.length < 3 || nick.length > 16) return ctx.reply('Nick inválido (3-16 caracteres):');
 
-            const nick = sanitizeInput(ctx.message.text);
-            if (nick.startsWith('/')) return next();
-            if (nick.length < 3 || nick.length > 16) {
-                return ctx.reply('Nick inválido. Use entre 3 e 16 caracteres:');
-            }
+        const [existing] = await pool.execute('SELECT * FROM players WHERE nickname = ?', [nick]);
+        if (existing.length > 0) return ctx.reply('Este nick já está em uso:');
 
-            const [existing] = await pool.execute('SELECT * FROM players WHERE nickname = ?', [nick]);
-            if (existing.length > 0) {
-                return ctx.reply('Este nick já está em uso. Escolha outro:');
-            }
-
-            // Registra o novo jogador
-            console.log(`[BOT] Registrando novo jogador ${ctx.from.id} com nick ${nick}`);
-            await pool.execute('INSERT INTO players (telegram_id, nickname) VALUES (?, ?)', [ctx.from.id, nick]);
-            pendingNick.delete(ctx.from.id);
-            
-            await ctx.reply(`✅ Nick <b>${nick}</b> registrado!`, { parse_mode: 'HTML' });
-            await sleep(500);
-            await sendAppPortal(ctx);
-        } catch (err) {
-            console.error(`[BOT] Erro ao processar nick:`, err);
-            ctx.reply('❌ Erro ao registrar nick. Tente novamente.');
-        }
+        await pool.execute('INSERT INTO players (telegram_id, nickname) VALUES (?, ?)', [ctx.from.id, nick]);
+        pendingNick.delete(ctx.from.id);
+        await ctx.reply(`✅ Nick <b>${nick}</b> registrado!`, { parse_mode: 'HTML' });
+        await sleep(500);
+        await sendAppPortal(ctx);
     });
 }
 
-// ─── FUNÇÃO: Enviar o Portal do App com Tutorial ────────────────────────────────
 async function sendAppPortal(ctx) {
-    try {
-        const WEBAPP_URL = process.env.WEBAPP_URL;
-        console.log(`[BOT] sendAppPortal chamado. WEBAPP_URL: ${WEBAPP_URL ? '✓ configurada' : '✗ NÃO configurada'}`);
-        
-        // Cria o teclado com o botão do WebApp
-        let keyboard;
-        if (WEBAPP_URL) {
-            keyboard = Markup.inlineKeyboard([
-                [Markup.button.webApp('🎮 Abrir VG Matchmaking', WEBAPP_URL)],
-            ]);
-        } else {
-            console.warn('[BOT] WEBAPP_URL não configurada! Enviando sem botão.');
-            keyboard = {};
-        }
+    const WEBAPP_URL = process.env.WEBAPP_URL;
+    const keyboard = WEBAPP_URL ? Markup.inlineKeyboard([[Markup.button.webApp('🎮 Abrir VG Matchmaking', WEBAPP_URL)]]) : {};
 
-        // Tutorial em HTML (muito mais robusto que Markdown para caracteres especiais)
-        const tutorial = 
-            '⚡ <b>VG Matchmaking BR</b>\n\n' +
-            '📖 <b>COMO USAR:</b>\n\n' +
-            '1️⃣ <b>Escolha a Fila</b>\n' +
-            '   🎯 <b>3v3 Ranked</b> — Competitivo, ganha/perde FC\n' +
-            '   🔥 <b>5v5 Casual</b> — Sem pontos, apenas diversão\n\n' +
-            '2️⃣ <b>Aguarde a Partida</b>\n' +
-            '   Quando 6 ou 10 jogadores forem encontrados, você receberá:\n' +
-            '   • ID da partida (#XXXXX)\n' +
-            '   • Sniping Code (ex: VG-1_)\n' +
-            '   • Nomes dos seus aliados\n\n' +
-            '3️⃣ <b>Mude Seu Nick</b>\n' +
-            '   Antes de entrar no jogo, mude seu nick para:\n' +
-            '   <code>SNIPING_CODE-NUMERO_SeuNick</code>\n' +
-            '   Exemplo: <code>VG-1_Seu_Nick</code>\n\n' +
-            '4️⃣ <b>Jogue!</b>\n' +
-            '   Encontre seus aliados (mesma cor) e vença!\n\n' +
-            '💡 <b>DICAS:</b>\n' +
-            '   • Fique <b>Online</b> para ser encontrado\n' +
-            '   • Clique em <b>Ausente</b> se precisar sair\n' +
-            '   • Veja seu <b>Perfil</b> e <b>Ranking</b>\n' +
-            '   • Busque outros jogadores por nick\n\n' +
-            '🚀 <b>Pronto? Toque no botão abaixo!</b>';
+    const tutorial = 
+        '⚡ <b>VG Matchmaking BR</b>\n\n' +
+        '📖 <b>COMO USAR:</b>\n\n' +
+        '1️⃣ <b>Escolha a Fila</b>\n' +
+        '   🎯 <b>3v3 Ranked</b> — Competitivo, ganha/perde FC\n' +
+        '   🔥 <b>5v5 Casual</b> — Sem pontos, apenas diversão\n\n' +
+        '2️⃣ <b>Aguarde a Partida</b>\n' +
+        '   Quando 6 ou 10 jogadores forem encontrados, você receberá:\n' +
+        '   • ID da partida (#XXXXX)\n' +
+        '   • Sniping Code (ex: VG-1_)\n' +
+        '   • Nomes dos seus aliados\n\n' +
+        '3️⃣ <b>Mude Seu Nick</b>\n' +
+        '   Antes de entrar no jogo, mude seu nick para:\n' +
+        '   <code>SNIPING_CODE-NUMERO_SeuNick</code>\n' +
+        '   Exemplo: <code>VG-1_Seu_Nick</code>\n\n' +
+        '4️⃣ <b>Jogue!</b>\n' +
+        '   Encontre seus aliados (mesma cor) e vença!\n\n' +
+        '💡 <b>DICAS:</b>\n' +
+        '   • Fique <b>Online</b> para ser encontrado\n' +
+        '   • Clique em <b>Ausente</b> se precisar sair\n' +
+        '   • Veja seu <b>Perfil</b> e <b>Ranking</b>\n' +
+        '   • Use <code>/changenick</code> para mudar o nome\n\n' +
+        '🚀 <b>Pronto? Toque no botão abaixo!</b>';
 
-        console.log(`[BOT] Enviando tutorial para ${ctx.from.id}...`);
-        await ctx.reply(tutorial, { parse_mode: 'HTML', ...keyboard });
-        console.log(`[BOT] Tutorial enviado com sucesso para ${ctx.from.id}`);
-    } catch (err) {
-        console.error(`[BOT] Erro ao enviar portal:`, err);
-        try {
-            // Fallback: envia mensagem simples sem formatação
-            await ctx.reply('Abra o VG Matchmaking aqui: ' + (process.env.WEBAPP_URL || 'URL não configurada'));
-        } catch (fallbackErr) {
-            console.error(`[BOT] Erro no fallback:`, fallbackErr);
-        }
-    }
+    await ctx.reply(tutorial, { parse_mode: 'HTML', ...keyboard });
 }
 
-// ─── INICIALIZAÇÃO ────────────────────────────────────────────────────────────
 async function startBot() {
     const BOT_TOKEN = process.env.BOT_TOKEN;
-    if (!BOT_TOKEN) {
-        console.error('[BOT] ❌ BOT_TOKEN não configurado. Defina a variável de ambiente BOT_TOKEN.');
-        return;
-    }
-
-    console.log('[BOT] Iniciando bot com token configurado...');
+    if (!BOT_TOKEN) return console.error('[BOT] ❌ BOT_TOKEN não configurado.');
     const bot = new Telegraf(BOT_TOKEN);
-    
-    // Testa conexão com Telegram
-    const isConnected = await testTelegramConn();
-    if (!isConnected) {
-        console.warn('[BOT] ⚠️ Sem conexão com Telegram API. O bot pode não funcionar.');
-    } else {
-        console.log('[BOT] ✓ Conexão com Telegram API OK');
-    }
-
     setupHandlers(bot);
-
-    // Inicia o polling
-    try {
-        bot.launch();
-        console.log('[BOT] ✅ Bot iniciado e aguardando mensagens...');
-    } catch (err) {
-        console.error('[BOT] Erro ao iniciar bot:', err);
-    }
-
-    // Graceful shutdown
-    process.once('SIGINT', () => {
-        console.log('[BOT] Encerrando bot (SIGINT)...');
-        bot.stop('SIGINT');
-    });
-    process.once('SIGTERM', () => {
-        console.log('[BOT] Encerrando bot (SIGTERM)...');
-        bot.stop('SIGTERM');
-    });
+    bot.launch();
+    console.log('[BOT] ✅ Bot iniciado!');
 }
 
-// ─── EXPORT ───────────────────────────────────────────────────────────────────
 module.exports = { startBot };

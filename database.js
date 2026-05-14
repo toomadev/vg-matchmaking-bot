@@ -37,7 +37,8 @@ async function initDB() {
             losses INT DEFAULT 0,
             games INT DEFAULT 0,
             vg_index DECIMAL(10,2) DEFAULT 1000,
-            penalty_until VARCHAR(64) DEFAULT NULL,
+            penalty_until DATETIME DEFAULT NULL,
+            fraud_penalty_until DATETIME DEFAULT NULL,
             is_admin BOOLEAN DEFAULT FALSE
         )
     `);
@@ -67,7 +68,17 @@ async function initDB() {
         )
     `);
     await pool.execute(`
-        CREATE TABLE IF NOT EXISTS news (
+        CREATE TABLE IF NOT EXISTS reports (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            match_id INT,
+            reporter_id BIGINT,
+            reason TEXT,
+            status ENUM('pending', 'resolved') DEFAULT 'pending',
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    `);
+    await pool.execute(`
+        CREATE TABLE IF NOT EXISTS news (`
             id INT AUTO_INCREMENT PRIMARY KEY,
             content TEXT,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP

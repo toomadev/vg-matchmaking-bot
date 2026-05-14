@@ -1,3 +1,4 @@
+
 const { pool } = require("./database");
 
 let queue3v3 = [];
@@ -34,7 +35,6 @@ function isPlayerInMatch(id, activeMatches) {
 }
 
 function addToQueue(mode, player, activeMatches, onlineUsers) {
-    // Garante que o jogador está online antes de entrar na fila
     const user = onlineUsers.get(player.id);
     if (!user || user.status !== 'online') return false;
 
@@ -42,8 +42,6 @@ function addToQueue(mode, player, activeMatches, onlineUsers) {
     const alreadyIn5v5 = queue5v5.find(p => p.id === player.id);
 
     if (alreadyIn3v3 || alreadyIn5v5) return false;
-    
-    // Verifica se o jogador já está em uma partida ativa
     if (isPlayerInMatch(player.id, activeMatches)) return false;
 
     if (mode === "3v3") queue3v3.push(player);
@@ -61,63 +59,37 @@ function removeFromQueue(id) {
 }
 
 function returnToQueue(mode, player, priority = false) {
-    let queue;
-    if (mode === "3v3") queue = queue3v3;
-    else queue = queue5v5;
-
+    let queue = mode === "3v3" ? queue3v3 : queue5v5;
     const exists = queue.some(p => p.id === player.id);
     if (exists) return;
 
     if (priority) {
-        queue.unshift(player); // Início da fila
+        queue.unshift(player); // Início da fila (prioridade)
     } else {
-        queue.push(player); // Final da fila
+        queue.push(player); // Final da fila (punição)
     }
 }
 
 async function createMatch(mode) {
-    let size;
-    let queue;
-    
-    if (mode === "3v3") {
-        size = 6;
-        queue = queue3v3;
-    } else {
-        size = 10;
-        queue = queue5v5;
-    }
+    let size = mode === "3v3" ? 6 : 10;
+    let queue = mode === "3v3" ? queue3v3 : queue5v5;
 
     if (queue.length < size) return null;
 
     const players = queue.splice(0, size);
-    
-    // Remove esses jogadores de QUALQUER outra fila que possam estar (garantia extra)
-    for (const p of players) {
-        removeFromQueue(p.id);
-    }
+    for (const p of players) removeFromQueue(p.id);
 
     const shuffled = [...players].sort(() => Math.random() - 0.5);
     const half = size / 2;
-
-    // Atribui número de time aleatório (1 ou 2) — metade recebe 1, metade recebe 2
     const teamNumber = Math.random() < 0.5 ? 1 : 2;
     const teamA = shuffled.slice(0, half).map(p => ({ ...p, teamNumber }));
     const teamB = shuffled.slice(half).map(p => ({ ...p, teamNumber: teamNumber === 1 ? 2 : 1 }));
 
     const snipingCode = generateSnipingCode();
-
     const [result] = await pool.execute(
         `INSERT INTO active_matches (sniping_code, mode, team_a_ids, team_b_ids, confirmations, results, created_at)
          VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [
-            snipingCode,
-            mode,
-            JSON.stringify(teamA),
-            JSON.stringify(teamB),
-            JSON.stringify([]),
-            JSON.stringify({}),
-            new Date().toISOString()
-        ]
+        [snipingCode, mode, JSON.stringify(teamA), JSON.stringify(teamB), JSON.stringify([]), JSON.stringify({}), new Date().toISOString()]
     );
 
     const match = {
@@ -127,7 +99,8 @@ async function createMatch(mode) {
         teamA,
         teamB,
         confirmations: [],
-        results: {}
+        results: {},
+        created_at: new Date().toISOString()
     };
 
     activeMatches.push(match);
@@ -140,14 +113,36 @@ async function removeActiveMatch(matchId) {
     if (index !== -1) activeMatches.splice(index, 1);
 }
 
+// Punição: Jogadores que não confirmam em 2 min vão para o FINAL DA FILA
+async function checkExpiringMatches() {
+    const now = new Date();
+    const expiredMatches = activeMatches.filter(m => {
+        const createdAt = new Date(m.created_at);
+        const diffMinutes = (now - createdAt) / (1000 * 60);
+        return diffMinutes > 2 && m.confirmations.length < (m.teamA.length + m.teamB.length);
+    });
+
+    for (const match of expiredMatches) {
+        const totalPlayers = [...match.teamA, ...match.teamB];
+        const nonConfirmers = totalPlayers.filter(p => !match.confirmations.includes(p.id));
+        const confirmers = totalPlayers.filter(p => match.confirmations.includes(p.id));
+
+        // Punição: Vai para o final da fila
+        for (const player of nonConfirmers) {
+            returnToQueue(match.mode, player, false); 
+        }
+
+        // Justos: Voltam para o início da fila
+        for (const player of confirmers) {
+            returnToQueue(match.mode, player, true);
+        }
+
+        await removeActiveMatch(match.match_id);
+    }
+}
+
 module.exports = {
-    queue3v3,
-    queue5v5,
-    activeMatches,
-    loadActiveMatches,
-    addToQueue,
-    removeFromQueue,
-    returnToQueue,
-    createMatch,
-    removeActiveMatch
+    queue3v3, queue5v5, activeMatches, loadActiveMatches,
+    addToQueue, removeFromQueue, returnToQueue, createMatch,
+    removeActiveMatch, checkExpiringMatches
 };
