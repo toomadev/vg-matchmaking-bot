@@ -143,7 +143,10 @@ function setupHandlers(bot) {
 }
 
 async function sendAppPortal(ctx) {
-    const WEBAPP_URL = process.env.WEBAPP_URL;
+    let WEBAPP_URL = process.env.WEBAPP_URL;
+    if (WEBAPP_URL && WEBAPP_URL.startsWith('http://')) {
+        WEBAPP_URL = WEBAPP_URL.replace('http://', 'https://');
+    }
     const keyboard = WEBAPP_URL ? Markup.inlineKeyboard([[Markup.button.webApp('🎮 Abrir VG Matchmaking', WEBAPP_URL)]]) : {};
 
     const tutorial = 
