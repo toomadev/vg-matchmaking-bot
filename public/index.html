@@ -6,11 +6,11 @@
 <title>VG Matchmaking BR</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="/socket.io/socket.io.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg:        #0a0a18;
-    --surface:   #111126;
+    --surface:   #111120;
     --border:    #1e1e3a;
     --border2:   #2a2a50;
     --text:      #7070a0;
@@ -26,7 +26,6 @@
     --blue-dim:  #0d2233;
     --radius:    10px;
     --font-mono: 'Share Tech Mono', monospace;
-    --font-ui:   'Rajdhani', sans-serif;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -53,7 +52,6 @@
     z-index: 100;
   }
   .header-title {
-    font-family: var(--font-ui);
     font-size: 18px;
     font-weight: 700;
     color: var(--yellow);
@@ -82,7 +80,6 @@
     min-width: 70px;
     padding: 10px 8px;
     text-align: center;
-    font-family: var(--font-ui);
     font-size: 12px;
     font-weight: 700;
     letter-spacing: 1px;
@@ -108,9 +105,10 @@
     border-radius: var(--radius);
     padding: 14px;
     margin-bottom: 10px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
   }
   .card-title {
-    font-family: var(--font-ui);
     font-size: 11px;
     font-weight: 700;
     letter-spacing: 2px;
@@ -133,7 +131,6 @@
 
   /* ── PLAYER CARD ── */
   .player-nick {
-    font-family: var(--font-ui);
     font-size: 22px;
     font-weight: 700;
     color: var(--white);
@@ -162,7 +159,6 @@
   .stat-box-val {
     font-size: 22px;
     font-weight: bold;
-    font-family: var(--font-ui);
   }
   .stat-box-lbl { font-size: 10px; color: var(--text-dim); letter-spacing: 1px; margin-top: 2px; }
 
@@ -173,7 +169,7 @@
     padding: 12px 8px;
     border: none;
     border-radius: var(--radius);
-    font-family: var(--font-ui);
+    font-family: var(--font-mono);
     font-size: 14px;
     font-weight: 700;
     letter-spacing: 1px;
@@ -204,7 +200,7 @@
   }
   .rank-row:last-child { border-bottom: none; }
   .rank-pos { width: 28px; text-align: center; font-size: 16px; flex-shrink: 0; }
-  .rank-nick { flex: 1; color: var(--white); font-family: var(--font-ui); font-size: 15px; font-weight: 600; }
+  .rank-nick { flex: 1; color: var(--white); font-size: 15px; font-weight: 600; }
   .rank-fc   { color: var(--green); font-size: 13px; }
   .rank-games{ color: var(--text-dim); font-size: 11px; }
   .rank-wr   { color: var(--blue); font-size: 11px; }
@@ -224,7 +220,6 @@
     50%    { box-shadow: 0 0 20px rgba(59,191,255,.6); }
   }
   .match-title {
-    font-family: var(--font-ui);
     font-size: 20px;
     font-weight: 700;
     color: var(--yellow);
@@ -235,7 +230,6 @@
     font-weight: bold;
     color: var(--white);
     letter-spacing: 8px;
-    font-family: var(--font-ui);
     margin: 8px 0;
   }
   .nick-format {
@@ -261,7 +255,6 @@
 
   /* ── COUNTDOWN ── */
   .countdown-num {
-    font-family: var(--font-ui);
     font-size: 80px;
     font-weight: 700;
     color: var(--yellow);
@@ -306,7 +299,7 @@
     margin-bottom: 10px;
     text-align: center;
   }
-  .penalty-title { color: var(--red); font-family: var(--font-ui); font-size: 18px; font-weight: 700; }
+  .penalty-title { color: var(--red); font-size: 18px; font-weight: 700; }
   .penalty-exp   { color: var(--yellow); font-size: 12px; margin-top: 6px; }
 
   /* ── LOADING ── */
@@ -338,7 +331,6 @@
     border: 1px solid var(--border2);
     border-radius: 20px;
     padding: 8px 20px;
-    font-family: var(--font-ui);
     font-size: 13px;
     color: var(--white);
     opacity: 0;
@@ -358,7 +350,7 @@
     border-bottom: 1px solid var(--border);
   }
   .ally-row:last-child { border-bottom: none; }
-  .ally-nick { color: var(--white); font-family: var(--font-ui); font-size: 14px; }
+  .ally-nick { color: var(--white); font-size: 14px; }
   .ally-fc   { color: var(--yellow); font-size: 12px; }
 
   .not-registered {
@@ -368,6 +360,17 @@
     line-height: 2;
   }
   .not-registered .icon { font-size: 40px; margin-bottom: 8px; }
+
+  /* ── COLOR CLASSES ── */
+  .g  { color: var(--green); }
+  .y  { color: var(--yellow); }
+  .b  { color: var(--blue); }
+  .r  { color: var(--red); }
+  .p  { color: var(--purple); }
+  .w  { color: var(--white); font-weight: 600; }
+  .d  { color: #252545; }
+  .dim{ color: var(--text-dim); }
+  .s  { color: var(--border2); }
 </style>
 </head>
 <body>
@@ -518,76 +521,34 @@ function renderLobby() {
     return;
   }
   const s = globalState;
-  let html = '';
-
-  // Status card
-  html += `
-    <div class="card">
-      <div class="card-title">📡 STATUS AO VIVO</div>
-      <div class="status-row">
-        <div class="dot dot-green"></div>
-        <span class="stat-label">Online</span>
-        <span class="stat-value">${s.online}</span>
-        <span class="stat-sub">jogadores</span>
-      </div>
-      <div class="status-row">
-        <div class="dot dot-blue"></div>
-        <span class="stat-label">Buscando</span>
-        <span class="stat-value">${s.searching}</span>
-        <span class="stat-sub">jogadores</span>
-      </div>
-      <div class="status-row">
-        <div class="dot dot-purple"></div>
-        <span class="stat-label">Em Jogo</span>
-        <span class="stat-value">${s.inGame}</span>
-        <span class="stat-sub">partida(s)</span>
-      </div>
-    </div>`;
-
-  // Filas
-  html += `
-    <div class="card">
-      <div class="card-title">⚔ FILAS ABERTAS</div>
-      <div class="status-row">
-        <div class="dot dot-yellow"></div>
-        <span class="stat-label">3v3 Casual</span>
-        <span class="stat-value">${s.queue3v3}/6</span>
-      </div>
-      <div class="status-row">
-        <div class="dot dot-yellow"></div>
-        <span class="stat-label">5v5 Ranked</span>
-        <span class="stat-value">${s.queue5v5}/10</span>
-      </div>
-    </div>`;
-
-  // Partidas ativas
-  if (s.matches && s.matches.length > 0) {
-    html += `<div class="card"><div class="card-title">🎮 PARTIDAS EM ANDAMENTO</div>`;
-    s.matches.forEach(m => {
-      html += `
-        <div class="status-row">
-          <div class="dot dot-purple"></div>
-          <span class="stat-label">#${m.id} · ${m.mode}</span>
-          <span class="stat-sub">${m.confirmed}/${m.total} conf.</span>
-        </div>`;
-    });
-    html += `</div>`;
+  
+  // Get player info if available
+  let playerInfo = '';
+  if (playerData) {
+    playerInfo = `<span class="dim">👤 JOGADOR</span>
+<span class="w">   ${playerData.nick}</span>
+<span class="dim">   FC:</span> <span class="y">${playerData.fc || '?'}</span>  <span class="dim">|  Rank:</span> <span class="p">#${playerData.rank || '?'} BR</span>`;
   }
 
-  // Ranking mini
-  if (s.ranking && s.ranking.length > 0) {
-    const medals = ['🥇','🥈','🥉'];
-    html += `<div class="card"><div class="card-title">🏆 TOP 3</div>`;
-    s.ranking.slice(0,3).forEach((p, i) => {
-      html += `
-        <div class="status-row">
-          <span style="width:24px;text-align:center">${medals[i]}</span>
-          <span class="stat-label" style="color:var(--white)">${p.nick}</span>
-          <span class="rank-fc">${p.fc}</span>
-        </div>`;
-    });
-    html += `</div>`;
-  }
+  let html = `<div class="card"><span class="y">⚡ VG MATCHMAKING BR</span>
+<span class="dim">━━━━━━━━━━━━━━━━━━━━━━</span>
+
+${playerInfo}
+${playerInfo ? '<span class="dim">━━━━━━━━━━━━━━━━━━━━━━</span>' : ''}
+
+<span class="dim">📡 STATUS ATUAL</span>
+<span class="g">   ⬤ Online</span>     <span class="w">${s.online}</span> <span class="dim">jogadores</span>
+<span class="b">   ◈ Buscando</span>   <span class="w">${s.searching}</span> <span class="dim">jogadores</span>
+<span class="p">   ⬡ Em Jogo</span>    <span class="w">${s.inGame}</span> <span class="dim">partida(s)</span>
+<span class="dim">━━━━━━━━━━━━━━━━━━━━━━</span>
+
+<span class="dim">⚔  FILAS ABERTAS</span>
+<span class="g">   3v3 Casual</span>  <span class="y">${s.queue3v3}</span><span class="dim">/6</span>
+<span class="dim">   5v5 Ranked   ${s.queue5v5}/10</span>
+<span class="dim">━━━━━━━━━━━━━━━━━━━━━━</span>
+
+<span class="dim">🎯 ENTRAR 3v3   ⚡ ENTRAR 5v5</span>
+<span class="dim">❌ SAIR DA FILA    👤 PERFIL</span></div>`;
 
   el.innerHTML = html;
 }
@@ -600,78 +561,68 @@ function renderMatch(data) {
     return;
   }
   if (!data.inMatch) {
-    el.innerHTML = `
-      <div class="card" style="text-align:center;padding:30px">
-        <div style="font-size:40px;margin-bottom:12px">⏳</div>
-        <div style="color:var(--text);font-family:var(--font-ui);font-size:16px">Nenhuma partida ativa</div>
-        <div style="color:var(--text-dim);margin-top:6px">Entre em uma fila pelo bot para encontrar uma partida</div>
-      </div>`;
+    el.innerHTML = `<div class="card" style="text-align:center;padding:30px">
+<div style="font-size:40px;margin-bottom:12px">⏳</div>
+<div style="color:var(--white);font-size:16px">Nenhuma partida ativa</div>
+<div style="color:var(--text-dim);margin-top:6px">Entre em uma fila pelo bot para encontrar uma partida</div>
+</div>`;
     return;
   }
 
-  const dots = Array.from({ length: data.total }, (_, i) =>
-    `<div class="confirm-dot ${i < data.confirmed ? 'done' : ''}">
-      ${i < data.confirmed ? '✔' : ''}
-    </div>`
-  ).join('');
-
-  const allies = (data.allies || []).map(a =>
-    `<div class="ally-row">
-      <span class="ally-nick">▸ ${a.nick}</span>
-      <span class="ally-fc">${a.fc}</span>
-    </div>`
-  ).join('');
-
-  const enemies = Array.from({ length: data.total / 2 }, () =>
-    `<div class="ally-row"><span class="ally-nick" style="color:var(--text-dim)">▸ oculto</span></div>`
-  ).join('');
-
+  const allies = (data.allies || []).map(a => `<span class="dim">   ▸</span> <span class="w">${a.nick}</span>    <span class="dim">FC ${a.fc}</span>`).join('\n');
+  const enemies = Array.from({ length: data.total / 2 }, () => '<span class="dim">   ▸ oculto</span>').join(' ');
+  
   const confirmStatus = data.iConfirmed
-    ? `<div style="color:var(--green);font-family:var(--font-ui);margin-top:8px">✔ Você confirmou a troca de nick</div>`
-    : `<div style="color:var(--yellow);font-family:var(--font-ui);margin-top:8px">⚠ Confirme no bot que trocou o nick</div>`;
+    ? `<span class="g">✅ Nick alterado</span>`
+    : `<span class="r">❌ Não consigo mudar</span>`;
 
-  el.innerHTML = `
-    <div class="match-banner">
-      <div class="match-title">⚔ PARTIDA #${data.matchId}</div>
-      <div style="color:var(--text);font-size:12px;margin-top:4px">${data.mode === '3v3' ? '3v3 Casual' : '5v5 Ranked'}</div>
-    </div>
+  const confirmDots = Array.from({ length: data.total }, (_, i) =>
+    i < data.confirmed ? '<span class="g">✔</span>' : '<span class="dim">□</span>'
+  ).join(' ');
 
-    <div class="card">
-      <div class="card-title">🎯 SNIPING CODE</div>
-      <div class="sniping-code">${data.snipingCode}</div>
-      <div style="color:var(--text-dim);font-size:11px">Abra a sala com este código</div>
-    </div>
+  el.innerHTML = `<div class="card"><span class="y">⚔  PARTIDA ENCONTRADA</span>
+<span class="dim">━━━━━━━━━━━━━━━━━━━━━━</span>
 
-    <div class="card">
-      <div class="card-title">📝 SEU NICK IN-GAME</div>
-      <div class="nick-format">${data.myNickFormat}<span style="color:var(--text-dim)">SeuNick</span></div>
-      <div style="color:var(--text-dim);font-size:11px;margin-top:6px">Troque seu nick para o formato acima</div>
-    </div>
+<span class="dim">🆔 ID DA PARTIDA</span>
+<span class="w">   #${data.matchId}</span>  <span class="dim">|  Modo:</span> <span class="g">${data.mode === '3v3' ? '3v3 Casual' : '5v5 Ranked'}</span>
+<span class="dim">━━━━━━━━━━━━━━━━━━━━━━</span>
 
-    <div class="card">
-      <div class="card-title">🟦 SEU TIME</div>
-      ${allies}
-      <hr class="sep">
-      <div class="card-title" style="margin-bottom:8px">🟥 ADVERSÁRIOS</div>
-      ${enemies}
-    </div>
+<span class="g">🟦 SEU TIME</span>
+${allies}
 
-    <div class="card">
-      <div class="card-title">✅ CONFIRMAÇÕES (${data.confirmed}/${data.total})</div>
-      <div class="confirm-dots">${dots}</div>
-      ${confirmStatus}
-    </div>
+<span class="r">🟥 ADVERSÁRIOS</span>
+<span class="dim">   ▸ oculto ▸ oculto ▸ oculto</span>
+<span class="dim">━━━━━━━━━━━━━━━━━━━━━━</span>
 
-    <div id="countdown-section" style="display:none">
-      <div class="card" style="text-align:center">
-        <div class="card-title">⏱ BUSCANDO EM</div>
-        <div class="countdown-num" id="cd-num">10</div>
-        <div class="progress-bar">
-          <div class="progress-fill" id="cd-bar" style="width:0%"></div>
-        </div>
-        <div style="color:var(--yellow);font-family:var(--font-ui)">⚡ Preparem-se para buscar!</div>
-      </div>
-    </div>`;
+<span class="dim">🎯 SNIPING CODE</span>
+<span class="w">   ${data.snipingCode}</span>
+
+<span class="dim">📝 MUDE SEU NICK PARA</span>
+<span class="g">   ${data.myNickFormat}SeuNick</span>
+<span class="dim">━━━━━━━━━━━━━━━━━━━━━━</span>
+
+<span class="dim">✅ CONFIRMAÇÕES</span>
+<span class="dim">   </span><span class="g">${confirmDots}</span><span class="dim">  (${data.confirmed}/${data.total})</span>
+
+<span class="dim">━━━━━━━━━━━━━━━━━━━━━━</span>
+${confirmStatus}</div>
+
+<div id="countdown-section" style="display:none" class="card"><span class="y">⚔  PARTIDA #${data.matchId}</span>
+<span class="dim">━━━━━━━━━━━━━━━━━━━━━━</span>
+
+<span class="g">✔ Todos confirmados!</span>
+<span class="dim">━━━━━━━━━━━━━━━━━━━━━━</span>
+
+<span class="dim">⏱ BUSCA INICIANDO EM</span>
+
+<span class="w">          <span id="cd-num">10</span></span>
+
+<span class="b">   <span id="cd-bar">██████████░░░░░░░░░░</span></span>
+<span class="dim">━━━━━━━━━━━━━━━━━━━━━━</span>
+
+<span class="y">⚡ Preparem-se para buscar</span>
+<span class="dim">   Abram a sala e busquem</span>
+<span class="dim">   com o sniping code acima</span></div>`;
 }
 
 function startCountdown() {
@@ -684,7 +635,10 @@ function startCountdown() {
     const numEl = document.getElementById('cd-num');
     const barEl = document.getElementById('cd-bar');
     if (numEl) numEl.textContent = countdownVal;
-    if (barEl) barEl.style.width = `${((10 - countdownVal) / 10) * 100}%`;
+    if (barEl) {
+      const filled = Math.round((10 - countdownVal) / 10 * 20);
+      barEl.textContent = '█'.repeat(filled) + '░'.repeat(20 - filled);
+    }
     if (countdownVal <= 0) {
       clearInterval(countdownInt);
       showToast('🎯 BUSQUEM AGORA!');
@@ -698,22 +652,20 @@ function renderProfile(data) {
   const el = document.getElementById('page-profile');
 
   if (!USER_ID) {
-    el.innerHTML = `
-      <div class="not-registered">
-        <div class="icon">🤖</div>
-        <div style="color:var(--white);font-family:var(--font-ui);font-size:16px">Abra pelo Telegram</div>
-        <div>Acesse via bot para ver seu perfil</div>
-      </div>`;
+    el.innerHTML = `<div class="not-registered">
+<div class="icon">🤖</div>
+<div style="color:var(--white);font-size:16px">Abra pelo Telegram</div>
+<div>Acesse via bot para ver seu perfil</div>
+</div>`;
     return;
   }
 
   if (!data) {
-    el.innerHTML = `
-      <div class="not-registered">
-        <div class="icon">❓</div>
-        <div style="color:var(--white);font-family:var(--font-ui);font-size:16px">Não registrado</div>
-        <div>Use /start no bot para criar seu perfil</div>
-      </div>`;
+    el.innerHTML = `<div class="not-registered">
+<div class="icon">❓</div>
+<div style="color:var(--white);font-size:16px">Não registrado</div>
+<div>Use /start no bot para criar seu perfil</div>
+</div>`;
     return;
   }
 
@@ -722,55 +674,44 @@ function renderProfile(data) {
 
   if (isPenalty) {
     const exp = data.penaltyUntil ? new Date(data.penaltyUntil).toLocaleString('pt-BR') : '?';
-    html += `
-      <div class="penalty-card">
-        <div class="penalty-title">💀 JOGADOR PENALIZADO</div>
-        <div style="color:var(--text);margin-top:6px">Motivo: Não confirmou</div>
-        <div class="penalty-exp">Expira em: ${exp}</div>
-      </div>`;
+    html += `<div class="card"><span class="r">💀 JOGADOR PENALIZADO</span>
+<span class="dim">━━━━━━━━━━━━━━━━━━━━━━</span>
+
+<span class="dim">👤 JOGADOR</span>
+<span class="w">   ${data.nick}</span>
+<span class="dim">━━━━━━━━━━━━━━━━━━━━━━</span>
+
+<span class="dim">⚠️  PUNIÇÃO APLICADA</span>
+<span class="dim">   Motivo</span>    <span class="r">Não confirmou</span>
+<span class="dim">   Duração</span>   <span class="y">7 dias</span>
+<span class="dim">   Derrota</span>   <span class="r">+2 registradas</span>
+<span class="dim">━━━━━━━━━━━━━━━━━━━━━━</span>
+
+<span class="dim">📊 FC ATUAL</span>
+<span class="r">   💀 BLOQUEADO</span>
+
+<span class="dim">📅 EXPIRA EM</span>
+<span class="y">   ${exp}</span></div>`;
   }
 
-  html += `
-    <div class="card">
-      <div class="player-nick">${data.nick}</div>
-      <div style="margin-top:6px;display:flex;align-items:center;gap:12px">
-        <div class="player-fc">${data.fc || '💀'}</div>
-        ${data.rank ? `<div class="player-rank">#${data.rank} BR de ${data.totalRanked}</div>` : `<div style="color:var(--text-dim);font-size:12px">${data.games}/10 partidas</div>`}
-      </div>
-      <div style="margin-top:6px">
-        <span class="dot ${data.online ? 'dot-green' : 'dot-yellow'}" style="display:inline-block;vertical-align:middle;margin-right:6px"></span>
-        <span style="font-size:11px">${data.online ? 'Online' : 'Ausente'}</span>
-      </div>
-    </div>
+  html += `<div class="card"><span class="b">👤 PERFIL DO JOGADOR</span>
+<span class="dim">━━━━━━━━━━━━━━━━━━━━━━</span>
 
-    <div class="stats-grid">
-      <div class="stat-box">
-        <div class="stat-box-val" style="color:var(--green)">${data.wins}</div>
-        <div class="stat-box-lbl">VITÓRIAS</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-box-val" style="color:var(--red)">${data.losses}</div>
-        <div class="stat-box-lbl">DERROTAS</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-box-val" style="color:var(--white)">${data.games}</div>
-        <div class="stat-box-lbl">PARTIDAS</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-box-val" style="color:var(--blue)">${data.winRate}%</div>
-        <div class="stat-box-lbl">WIN RATE</div>
-      </div>
-    </div>
+<span class="dim">🎮 IDENTIDADE</span>
+<span class="w">   ${data.nick}</span>
+<span class="dim">   ID:</span> <span class="dim">${USER_ID}</span>
+<span class="dim">━━━━━━━━━━━━━━━━━━━━━━</span>
 
-    <div style="height:10px"></div>`;
+<span class="dim">📊 ESTATÍSTICAS</span>
+<span class="dim">   FC</span>        <span class="y">${data.fc || '?'}</span>
+<span class="dim">   Vitórias</span>  <span class="g">${data.wins}</span>
+<span class="dim">   Derrotas</span>  <span class="r">${data.losses}</span>
+<span class="dim">   Partidas</span>  <span class="w">${data.games}</span>
+<span class="dim">   Win Rate</span>  <span class="b">${data.winRate}%</span>
+<span class="dim">━━━━━━━━━━━━━━━━━━━━━━</span>
 
-  if (data.inMatch) {
-    html += `
-      <div class="card" style="border-color:var(--blue)">
-        <div style="color:var(--blue);font-family:var(--font-ui);font-weight:700">⚔ EM PARTIDA</div>
-        <button class="btn btn-blue btn-full" onclick="switchTab('match')">Ver Partida →</button>
-      </div>`;
-  }
+<span class="dim">🏆 RANKING</span>
+<span class="p">   #${data.rank || '?'} BR</span>  <span class="dim">de ${data.totalRanked || '?'} jogadores</span></div>`;
 
   el.innerHTML = html;
 }
@@ -784,26 +725,20 @@ function renderRanking() {
   }
 
   const medals = ['🥇','🥈','🥉'];
-  const rows = globalState.ranking.map((p, i) => `
-    <div class="rank-row">
-      <div class="rank-pos">${i < 3 ? medals[i] : i + 1}</div>
-      <div>
-        <div class="rank-nick ${p.penalty ? 'style="color:var(--red)"' : ''}">${p.nick}</div>
-        <div class="rank-wr">${p.wins}V · ${p.losses}D</div>
-      </div>
-      <div style="text-align:right">
-        <div class="rank-fc">${p.penalty ? '💀' : p.fc}</div>
-        <div class="rank-games">${p.games} jogos</div>
-      </div>
-    </div>`).join('');
+  const rows = globalState.ranking.map((p, i) => {
+    const medal = i < 3 ? medals[i] : ` ${i + 1}`;
+    const fc = p.penalty ? '💀' : p.fc;
+    return `<span class="dim">   ${medal}</span> <span class="w">${p.nick}</span>      <span class="g">${fc}</span>  <span class="dim">${p.games}</span>`;
+  }).join('\n');
 
-  el.innerHTML = `
-    <div class="card">
-      <div class="card-title">🏆 TOP PLAYERS BR</div>
-      ${rows || `<div style="color:var(--text-dim);text-align:center;padding:20px">Nenhum jogador com 10+ partidas ainda</div>`}
-      <hr class="sep">
-      <div style="color:var(--text-dim);font-size:11px;text-align:center">Mín. 10 partidas para rankear</div>
-    </div>`;
+  el.innerHTML = `<div class="card"><span class="y">🏆 TOP PLAYERS BR</span>
+<span class="dim">━━━━━━━━━━━━━━━━━━━━━━</span>
+
+<span class="dim">   NICK         FC    JOGOS</span>
+<span class="dim">   ──────────────────────</span>
+${rows}
+<span class="dim">   ──────────────────────</span>
+<span class="dim">   Mín. 10 partidas para rankear</span></div>`;
 }
 
 // ─── TOAST ────────────────────────────────────────────────────────────────────
