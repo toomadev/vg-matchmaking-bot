@@ -1,7 +1,7 @@
 
 const { Telegraf, Markup } = require('telegraf');
 const https = require('https');
-const { pool } = require('../database');
+const { pool } = require('./database');
 
 // ─── UTILS ────────────────────────────────────────────────────────────────────
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
