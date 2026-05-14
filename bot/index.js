@@ -1,29 +1,19 @@
 
 const { Telegraf, Markup } = require('telegraf');
-const fs   = require('fs');
-const path = require('path');
 const https = require('https');
-
 const { pool } = require('./database');
 
 // ─── UTILS ────────────────────────────────────────────────────────────────────
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 function sanitizeInput(text) { return String(text || '').replace(/[<>"\']/g, '').trim(); }
 
-async function testTelegramConn() {
-    return new Promise((resolve) => {
-        const req = https.get('https://api.telegram.org', res => { resolve(true); });
-        req.on('error', () => resolve(false));
-        req.setTimeout(10000, () => { req.destroy(); resolve(false); });
-    });
-}
-
 // ─── HANDLERS ─────────────────────────────────────────────────────────────────
 function setupHandlers(bot) {
     const pendingNick = new Set();
 
-    // /start - Tutorial em texto e botão WebApp
+    // /start - Tutorial e botão WebApp
     bot.start(async (ctx) => {
+        console.log(`[BOT] /start recebido de ${ctx.from.id}`);
         try {
             const [rows] = await pool.execute('SELECT * FROM players WHERE telegram_id = ?', [ctx.from.id]);
             if (!rows[0]) {
@@ -37,8 +27,15 @@ function setupHandlers(bot) {
         }
     });
 
+    // /tutorial e /saguao (Alias para o portal)
+    bot.command(['tutorial', 'saguao'], async (ctx) => {
+        console.log(`[BOT] /${ctx.message.text.split(' ')[0].replace('/','')} recebido de ${ctx.from.id}`);
+        await sendAppPortal(ctx);
+    });
+
     // /changenick - Muda o apelido do jogador
     bot.command('changenick', async (ctx) => {
+        console.log(`[BOT] /changenick recebido de ${ctx.from.id}`);
         try {
             const newNick = sanitizeInput(ctx.message.text.split(' ').slice(1).join(' '));
             if (!newNick) return ctx.reply('Uso: /changenick NovoNick');
@@ -56,6 +53,7 @@ function setupHandlers(bot) {
 
     // /report id_partida - Gera relatório de análise
     bot.command('report', async (ctx) => {
+        console.log(`[BOT] /report recebido de ${ctx.from.id}`);
         try {
             const matchId = ctx.message.text.split(' ')[1];
             if (!matchId) return ctx.reply('Uso: /report ID_DA_PARTIDA');
@@ -70,8 +68,9 @@ function setupHandlers(bot) {
         }
     });
 
-    // /relatorio - Apenas para admins: mostra relatórios pendentes
+    // /relatorio - Apenas para admins
     bot.command('relatorio', async (ctx) => {
+        console.log(`[BOT] /relatorio recebido de ${ctx.from.id}`);
         try {
             const [adminCheck] = await pool.execute('SELECT is_admin FROM players WHERE telegram_id = ?', [ctx.from.id]);
             if (!adminCheck[0]?.is_admin) return ctx.reply('Comando restrito a administradores.');
@@ -102,29 +101,29 @@ function setupHandlers(bot) {
         }
     });
 
-    // Callback para punição/inocência
+    // Callbacks
     bot.action(/punish_(\d+)_(\d+)/, async (ctx) => {
         const targetId = ctx.match[1];
         const reportId = ctx.match[2];
         const fraudUntil = new Date();
         fraudUntil.setDate(fraudUntil.getDate() + 7);
-
         await pool.execute(
             'UPDATE players SET fraud_penalty_until = ?, losses = losses + 2, games = games + 2 WHERE telegram_id = ?',
             [fraudUntil.toISOString().slice(0, 19).replace('T', ' '), targetId]
         );
         await pool.execute('UPDATE reports SET status = "resolved" WHERE id = ?', [reportId]);
-        ctx.answerCbQuery('Jogador punido com 💀, exposição por 7 dias e +2 derrotas.');
+        ctx.answerCbQuery('Punição aplicada.');
         ctx.editMessageText('✅ Punição aplicada com sucesso.');
     });
 
     bot.action(/clear_(\d+)_(\d+)/, async (ctx) => {
         const reportId = ctx.match[2];
         await pool.execute('UPDATE reports SET status = "resolved" WHERE id = ?', [reportId]);
-        ctx.answerCbQuery('Jogador inocentado.');
-        ctx.editMessageText('✅ Relatório arquivado sem punições.');
+        ctx.answerCbQuery('Relatório arquivado.');
+        ctx.editMessageText('✅ Relatório arquivado.');
     });
 
+    // Registro de Nick
     bot.on('text', async (ctx, next) => {
         if (!pendingNick.has(ctx.from.id)) return next();
         const nick = sanitizeInput(ctx.message.text);
@@ -143,6 +142,7 @@ function setupHandlers(bot) {
 }
 
 async function sendAppPortal(ctx) {
+    console.log(`[BOT] Enviando portal para ${ctx.from.id}...`);
     let WEBAPP_URL = process.env.WEBAPP_URL;
     if (WEBAPP_URL && WEBAPP_URL.startsWith('http://')) {
         WEBAPP_URL = WEBAPP_URL.replace('http://', 'https://');
@@ -173,16 +173,37 @@ async function sendAppPortal(ctx) {
         '   • Use <code>/changenick</code> para mudar o nome\n\n' +
         '🚀 <b>Pronto? Toque no botão abaixo!</b>';
 
-    await ctx.reply(tutorial, { parse_mode: 'HTML', ...keyboard });
+    try {
+        await ctx.reply(tutorial, { parse_mode: 'HTML', ...keyboard });
+    } catch (err) {
+        console.error(`[BOT] Erro ao enviar portal:`, err);
+    }
 }
 
 async function startBot() {
     const BOT_TOKEN = process.env.BOT_TOKEN;
     if (!BOT_TOKEN) return console.error('[BOT] ❌ BOT_TOKEN não configurado.');
     const bot = new Telegraf(BOT_TOKEN);
+    
     setupHandlers(bot);
+    
+    // Registrar comandos no menu do Telegram
+    try {
+        await bot.telegram.setMyCommands([
+            { command: 'start', description: 'Iniciar o bot e abrir o app' },
+            { command: 'saguao', description: 'Abrir o Mini App' },
+            { command: 'tutorial', description: 'Ver como jogar' },
+            { command: 'changenick', description: 'Mudar seu apelido' },
+            { command: 'report', description: 'Reportar uma partida (#id)' },
+            { command: 'relatorio', description: 'Ver relatórios (Admin)' }
+        ]);
+        console.log('[BOT] ✅ Comandos registrados no Telegram!');
+    } catch (err) {
+        console.error('[BOT] ❌ Erro ao registrar comandos:', err);
+    }
+
     bot.launch();
-    console.log('[BOT] ✅ Bot iniciado!');
+    console.log('[BOT] ✅ Bot iniciado e aguardando mensagens...');
 }
 
 module.exports = { startBot };
