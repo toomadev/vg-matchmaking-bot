@@ -9,1138 +9,169 @@
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg:        #0a0a18;
-    --surface:   #111120;
-    --border:    #1e1e3a;
-    --border2:   #2a2a50;
-    --text:      #7070a0;
-    --text-dim:  #44446a;
-    --white:     #f0f0ff;
-    --green:     #39ff7e;
-    --yellow:    #ffe04b;
-    --blue:      #3bbfff;
-    --red:       #ff5555;
-    --purple:    #b87fff;
-    --green-dim: #1a3325;
-    --red-dim:   #2d1010;
-    --blue-dim:  #0d2233;
-    --radius:    12px;
-    --font-mono: 'Share Tech Mono', monospace;
+    --bg: #0a0a18; --surface: #111120; --border: #1e1e3a; --text: #7070a0; --white: #f0f0ff; --yellow: #ffe04b; --green: #39ff7e; --red: #ff5555; --blue: #3bbfff;
   }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-
-  html, body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--font-mono);
-    font-size: 13px;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  /* ── HEADER ── */
-  .header {
-    border-bottom: 1px solid var(--border);
-    padding: 14px 18px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    background: var(--bg);
-  }
-  .header-title {
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--yellow);
-    letter-spacing: 1px;
-  }
-  .header-status {
-    font-size: 11px;
-    color: var(--text-dim);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .header-status-text {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex-wrap: wrap;
-  }
-  .status-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 10px;
-    letter-spacing: 0.5px;
-  }
-  .pulse-dot {
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    background: var(--green);
-    box-shadow: 0 0 6px var(--green);
-    animation: pulse 2s infinite;
-    flex-shrink: 0;
-  }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
-
-  /* ── TABS ── */
-  .tabs {
-    display: flex;
-    border-bottom: 1px solid var(--border);
-    overflow-x: auto;
-    scrollbar-width: none;
-    background: var(--bg);
-  }
-  .tabs::-webkit-scrollbar { display: none; }
-  .tab {
-    flex: 1;
-    min-width: 80px;
-    padding: 14px 10px;
-    text-align: center;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    color: var(--text-dim);
-    cursor: pointer;
-    border-bottom: 2px solid transparent;
-    transition: all .2s;
-    white-space: nowrap;
-  }
-  .tab.active {
-    color: var(--yellow);
-    border-bottom-color: var(--yellow);
-  }
-
-  /* ── PAGES ── */
-  .page { display: none; padding: 18px 16px; }
+  body { background: var(--bg); color: var(--text); font-family: 'Share Tech Mono', monospace; margin: 0; padding: 0; }
+  .header { border-bottom: 1px solid var(--border); padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+  .tabs { display: flex; border-bottom: 1px solid var(--border); }
+  .tab { flex: 1; padding: 15px; text-align: center; cursor: pointer; color: var(--text); }
+  .tab.active { color: var(--yellow); border-bottom: 2px solid var(--yellow); }
+  .page { display: none; padding: 20px; }
   .page.active { display: block; }
-
-  /* ── SECTION TITLE ── */
-  .section-title {
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 2px;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    margin-bottom: 14px;
-    margin-top: 4px;
-  }
-
-  /* ── SEPARATOR ── */
-  .sep { border: none; border-top: 1px solid var(--border); margin: 18px 0; }
-
-  /* ── STATUS INLINE ── */
-  .status-inline {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    flex-wrap: wrap;
-    margin-bottom: 20px;
-  }
-  .status-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 12px;
-  }
-  .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-  .dot-green { background: var(--green); box-shadow: 0 0 6px var(--green); }
-  .dot-blue  { background: var(--blue);  box-shadow: 0 0 6px var(--blue); }
-  .dot-purple{ background: var(--purple);box-shadow: 0 0 6px var(--purple); }
-  .dot-yellow{ background: var(--yellow);box-shadow: 0 0 6px var(--yellow); }
-
-  /* ── PLAYER INFO BLOCK ── */
-  .player-block {
-    margin-bottom: 22px;
-  }
-  .player-nick {
-    font-size: 24px;
-    font-weight: 700;
-    color: var(--white);
-    letter-spacing: 1px;
-    margin-bottom: 6px;
-  }
-  .player-meta {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    flex-wrap: wrap;
-    font-size: 13px;
-  }
-  .player-fc {
-    color: var(--yellow);
-    font-weight: bold;
-    font-size: 15px;
-  }
-  .player-rank { color: var(--purple); }
-
-  /* ── QUEUE STATUS ── */
-  .queue-status {
-    margin-bottom: 22px;
-  }
-  .queue-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 0;
-    border-bottom: 1px solid var(--border);
-  }
-  .queue-row:last-child { border-bottom: none; }
-  .queue-label { color: var(--text); font-size: 13px; }
-  .queue-count { color: var(--white); font-weight: bold; font-size: 15px; }
-  .queue-sub   { color: var(--text-dim); font-size: 11px; }
-
-  /* ── STATS GRID ── */
-  .stats-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-bottom: 22px;
-  }
-  .stat-box {
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 16px 12px;
-    text-align: center;
-  }
-  .stat-box-val {
-    font-size: 24px;
-    font-weight: bold;
-    margin-bottom: 4px;
-  }
-  .stat-box-lbl { font-size: 10px; color: var(--text-dim); letter-spacing: 1px; }
-
-  /* ── BUTTONS ── */
-  .btn-row { display: flex; gap: 12px; margin-bottom: 14px; }
-  .btn {
-    flex: 1;
-    padding: 16px 12px;
-    border-radius: var(--radius);
-    font-family: var(--font-mono);
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    cursor: pointer;
-    transition: all .15s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    min-height: 52px;
-  }
-  .btn:active { transform: scale(.96); }
-  .btn-green  { background: var(--green-dim); color: var(--green); border: 2px solid var(--green); }
-  .btn-red    { background: var(--red-dim);   color: var(--red);   border: 2px solid var(--red); }
-  .btn-blue   { background: var(--blue-dim);  color: var(--blue);  border: 2px solid var(--blue); }
-  .btn-yellow { background: #2a2200; color: var(--yellow); border: 2px solid var(--yellow); }
-  .btn-purple { background: #1e0e33; color: var(--purple); border: 2px solid var(--purple); }
-  .btn-gray   { background: #1a1a2e; color: var(--text);   border: 2px solid var(--border2); }
-  .btn-full   { flex: none; width: 100%; margin-bottom: 14px; }
-  .btn:disabled { opacity: .35; cursor: not-allowed; transform: none; }
-
-  /* ── RANKING TABLE ── */
-  .rank-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 14px 0;
-    border-bottom: 1px solid var(--border);
-  }
-  .rank-row:last-child { border-bottom: none; }
-  .rank-pos { width: 30px; text-align: center; font-size: 18px; flex-shrink: 0; }
-  .rank-info { flex: 1; }
-  .rank-nick { color: var(--white); font-size: 15px; font-weight: 600; margin-bottom: 3px; }
-  .rank-sub  { color: var(--text-dim); font-size: 11px; }
-  .rank-fc   { color: var(--green); font-size: 14px; font-weight: bold; }
-
-  /* ── MATCH CARD ── */
-  .match-banner {
-    border: 2px solid var(--blue);
-    border-radius: var(--radius);
-    padding: 20px 16px;
-    margin-bottom: 18px;
-    text-align: center;
-    animation: glow-border 2s infinite;
-  }
-  @keyframes glow-border {
-    0%,100%{ box-shadow: 0 0 8px rgba(59,191,255,.3); }
-    50%    { box-shadow: 0 0 20px rgba(59,191,255,.6); }
-  }
-  .match-title {
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--yellow);
-    letter-spacing: 2px;
-    margin-bottom: 8px;
-  }
-  .match-id {
-    font-size: 12px;
-    color: var(--text-dim);
-    margin-bottom: 16px;
-  }
-  .sniping-code {
-    font-size: 38px;
-    font-weight: bold;
-    color: var(--white);
-    letter-spacing: 10px;
-    margin: 10px 0;
-  }
-  .nick-format {
-    font-size: 15px;
-    color: var(--green);
-    border: 1px solid var(--green);
-    border-radius: 8px;
-    padding: 8px 14px;
-    display: inline-block;
-    margin: 8px 0;
-    background: var(--green-dim);
-  }
-  .confirm-dots { display: flex; gap: 10px; justify-content: center; margin: 14px 0; flex-wrap: wrap; }
-  .confirm-dot  {
-    width: 30px; height: 30px; border-radius: 50%;
-    border: 2px solid var(--border2);
-    background: var(--bg);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 14px;
-    transition: all .3s;
-  }
-  .confirm-dot.done { border-color: var(--green); background: var(--green-dim); }
-
-  /* ── ALLY LIST ── */
-  .ally-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 0;
-    border-bottom: 1px solid var(--border);
-  }
-  .ally-row:last-child { border-bottom: none; }
-  .ally-nick { color: var(--white); font-size: 14px; }
-  .ally-fc   { color: var(--yellow); font-size: 12px; }
-
-  /* ── COUNTDOWN ── */
-  .countdown-num {
-    font-size: 88px;
-    font-weight: 700;
-    color: var(--yellow);
-    text-align: center;
-    line-height: 1;
-    text-shadow: 0 0 30px rgba(255,224,75,.5);
-    transition: all .3s;
-    margin: 16px 0;
-  }
-  .progress-bar {
-    height: 8px;
-    background: var(--border);
-    border-radius: 4px;
-    overflow: hidden;
-    margin: 16px 0;
-  }
-  .progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--blue), var(--green));
-    border-radius: 4px;
-    transition: width .9s linear;
-  }
-
-  /* ── PENALTY CARD ── */
-  .penalty-card {
-    border: 2px solid var(--red);
-    border-radius: var(--radius);
-    padding: 20px 16px;
-    margin-bottom: 18px;
-    text-align: center;
-  }
-  .penalty-title { color: var(--red); font-size: 18px; font-weight: 700; margin-bottom: 8px; }
-  .penalty-exp   { color: var(--yellow); font-size: 12px; margin-top: 8px; }
-
-  /* ── LOADING ── */
-  .loading {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 220px;
-    gap: 16px;
-    color: var(--text-dim);
-  }
-  .spinner {
-    width: 36px; height: 36px;
-    border: 3px solid var(--border);
-    border-top-color: var(--yellow);
-    border-radius: 50%;
-    animation: spin .8s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* ── TOAST ── */
-  .toast {
-    position: fixed;
-    bottom: 28px;
-    left: 50%;
-    transform: translateX(-50%) translateY(20px);
-    background: var(--surface);
-    border: 1px solid var(--border2);
-    border-radius: 20px;
-    padding: 10px 22px;
-    font-size: 13px;
-    color: var(--white);
-    opacity: 0;
-    pointer-events: none;
-    transition: all .3s;
-    z-index: 999;
-    white-space: nowrap;
-  }
-  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-  /* ── SEARCH INPUT ── */
-  .search-box {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-  }
-  .search-input {
-    flex: 1;
-    background: var(--bg);
-    border: 2px solid var(--border2);
-    border-radius: var(--radius);
-    padding: 14px 16px;
-    color: var(--white);
-    font-family: var(--font-mono);
-    font-size: 14px;
-    outline: none;
-    transition: border-color .2s;
-  }
-  .search-input:focus { border-color: var(--blue); }
-  .search-input::placeholder { color: var(--text-dim); }
-
-  /* ── EMPTY STATE ── */
-  .empty-state {
-    text-align: center;
-    padding: 50px 24px;
-    color: var(--text-dim);
-    line-height: 2.2;
-  }
-  .empty-state .icon { font-size: 44px; margin-bottom: 12px; }
-  .empty-state .title { color: var(--white); font-size: 16px; margin-bottom: 8px; }
-
-  /* ── COLOR CLASSES ── */
-  .g  { color: var(--green); }
-  .y  { color: var(--yellow); }
-  .b  { color: var(--blue); }
-  .r  { color: var(--red); }
-  .p  { color: var(--purple); }
-  .w  { color: var(--white); font-weight: 600; }
-  .dim{ color: var(--text-dim); }
-
-  /* ── ONLINE STATUS BADGE ── */
-  .online-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 11px;
-    padding: 3px 8px;
-    border-radius: 20px;
-    font-weight: 700;
-  }
-  .badge-online  { color: var(--green);  border: 1px solid var(--green);  background: var(--green-dim); }
-  .badge-away    { color: var(--yellow); border: 1px solid var(--yellow); background: #2a2200; }
-  .badge-offline { color: var(--text);   border: 1px solid var(--border2); background: #1a1a2e; }
-  .badge-queue   { color: var(--blue);   border: 1px solid var(--blue);   background: var(--blue-dim); }
-
-  /* ── MY STATUS SECTION ── */
-  .my-status-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 22px;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
+  .btn { width: 100%; padding: 15px; margin-bottom: 10px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; }
+  .btn-green { background: #1a3325; color: var(--green); border: 1px solid var(--green); }
+  .btn-blue { background: #0d2233; color: var(--blue); border: 1px solid var(--blue); }
+  .btn-red { background: #2d1010; color: var(--red); border: 1px solid var(--red); }
+  .player-info { margin-bottom: 30px; }
+  .player-nick { font-size: 28px; color: var(--white); }
+  .player-fc { font-size: 18px; color: var(--yellow); }
+  .fraud-alert { color: var(--red); font-size: 12px; margin-top: 5px; }
+  .queue-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; font-size: 14px; }
+  .queue-label { color: var(--text); }
+  .queue-count { color: var(--yellow); font-weight: bold; }
+  .queue-searching { display: flex; align-items: center; gap: 8px; color: var(--green); font-size: 12px; }
+  .searching-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+  .exposed-box { background: rgba(255, 85, 85, 0.1); border: 1px solid var(--red); padding: 10px; border-radius: 8px; margin-top: 20px; }
+  .exposed-title { color: var(--red); font-size: 10px; font-weight: bold; margin-bottom: 8px; text-transform: uppercase; }
+  .exposed-list { font-size: 12px; color: var(--white); }
+  .rank-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); }
 </style>
 </head>
 <body>
-
-<!-- HEADER -->
 <div class="header">
-  <div class="header-title">⚡ VG BR</div>
-  <div class="header-status">
-    <div class="header-status-text" id="header-status-text">
-      <span class="status-pill"><span class="dot dot-green" id="conn-dot" style="background:var(--text-dim);box-shadow:none"></span><span id="conn-label" style="color:var(--text-dim)">conectando...</span></span>
+  <div style="color:var(--yellow); font-weight:bold;">⚡ VG BR</div>
+  <div id="online-count" style="font-size:12px;">0 online</div>
+</div>
+<div class="tabs">
+  <div class="tab active" onclick="showPage('lobby')">SAGUÃO</div>
+  <div class="tab" onclick="showPage('profile')">PERFIL</div>
+  <div class="tab" onclick="showPage('ranking')">RANKING</div>
+</div>
+
+<div id="lobby" class="page active">
+  <div class="player-info">
+    <div id="me-nick" class="player-nick">...</div>
+    <div id="me-fc" class="player-fc">...</div>
+    <div id="me-fraud" class="fraud-alert"></div>
+  </div>
+  
+  <div style="margin-bottom: 30px;">
+    <div class="queue-item">
+      <span class="queue-label">🎯 3v3 Ranked</span>
+      <div style="display: flex; align-items: center; gap: 15px;">
+        <span id="queue-3v3-count" class="queue-count">0/6</span>
+        <div id="queue-3v3-searching" class="queue-searching" style="display: none;">
+          <span class="searching-dot"></span>
+          <span>buscando</span>
+        </div>
+      </div>
     </div>
+    <div class="queue-item">
+      <span class="queue-label">🔥 5v5 Casual</span>
+      <div style="display: flex; align-items: center; gap: 15px;">
+        <span id="queue-5v5-count" class="queue-count">0/10</span>
+        <div id="queue-5v5-searching" class="queue-searching" style="display: none;">
+          <span class="searching-dot"></span>
+          <span>buscando</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <button class="btn btn-green" onclick="joinQueue('3v3')">ENTRAR 3v3 RANKED</button>
+  <button class="btn btn-blue" onclick="joinQueue('5v5')">ENTRAR 5v5 CASUAL</button>
+  <button class="btn btn-red" onclick="leaveQueue()">SAIR DA FILA</button>
+
+  <div id="exposed-section" class="exposed-box" style="display: none;">
+    <div class="exposed-title">💀 Jogadores Expostos por Fraude</div>
+    <div id="exposed-list" class="exposed-list"></div>
   </div>
 </div>
 
-<!-- TABS -->
-<div class="tabs">
-  <div class="tab active" data-tab="lobby">🏠 SAGUÃO</div>
-  <div class="tab" data-tab="profile">👤 PERFIL</div>
-  <div class="tab" data-tab="ranking">🏆 RANKING</div>
+<div id="profile" class="page">
+  <div class="player-info">
+    <div id="prof-nick" class="player-nick">...</div>
+    <div id="prof-stats" style="color:var(--white); margin-top:10px;"></div>
+  </div>
 </div>
 
-<!-- PAGES -->
-<div id="page-lobby"   class="page active"></div>
-<div id="page-profile" class="page"></div>
-<div id="page-ranking" class="page"></div>
-
-<!-- TOAST -->
-<div class="toast" id="toast"></div>
+<div id="ranking" class="page">
+  <div id="rank-list"></div>
+</div>
 
 <script>
-// ─── TELEGRAM WEBAPP ──────────────────────────────────────────────────────────
-const tg = window.Telegram?.WebApp;
-if (tg) {
-  tg.ready();
-  tg.expand();
-  tg.setHeaderColor('#0a0a18');
-  tg.setBackgroundColor('#0a0a18');
+const tg = window.Telegram.WebApp;
+const socket = io();
+const USER_ID = tg.initDataUnsafe.user?.id || 123;
+
+let playerStatus = { inQueue3v3: false, inQueue5v5: false };
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
 }
-
-const TG_USER = tg?.initDataUnsafe?.user || null;
-const USER_ID = TG_USER?.id || null;
-
-// ─── STATE ────────────────────────────────────────────────────────────────────
-let globalState  = null;
-let playerData   = null;
-let matchData    = null;
-let countdownInt = null;
-let countdownVal = 10;
-let activeTab    = 'lobby';
-let myStatus     = 'online'; // 'online' | 'away' | 'queue3v3' | 'queue5v5'
-let lastActivityTs = Date.now();
-
-// ─── SOCKET.IO ────────────────────────────────────────────────────────────────
-const socket = io({ transports: ['websocket'] });
-
-socket.on('connect', () => {
-  setConnected(true);
-  if (USER_ID) socket.emit('join_player', USER_ID);
-});
-socket.on('disconnect', () => setConnected(false));
 
 socket.on('state_update', (state) => {
-  globalState = state;
-  updateHeaderStatus();
-  if (activeTab === 'lobby')   renderLobby();
-  if (activeTab === 'ranking') renderRanking();
-});
-
-socket.on('match_found', ({ matchId }) => {
-  showToast('⚔ Partida encontrada!');
-  if (tg) tg.showAlert('⚔ PARTIDA ENCONTRADA!\n\nVeja os detalhes na aba SAGUÃO.');
-  // Atualiza status local
-  myStatus = 'match';
-  switchTab('lobby');
-  loadMatch();
-});
-
-socket.on('countdown_start', ({ matchId }) => {
-  showToast('⏱ Contagem regressiva!');
-  switchTab('lobby');
-  startCountdown();
-});
-
-socket.on('result_request', ({ matchId, team }) => {
-  showToast('🏁 Reporte o resultado!');
-  switchTab('lobby');
-  loadMatch();
-});
-
-function setConnected(ok) {
-  const dot   = document.getElementById('conn-dot');
-  const label = document.getElementById('conn-label');
-  dot.style.background  = ok ? 'var(--green)' : 'var(--red)';
-  dot.style.boxShadow   = ok ? '0 0 6px var(--green)' : 'none';
-  label.textContent     = ok ? 'ao vivo' : 'desconectado';
-  label.style.color     = ok ? 'var(--green)' : 'var(--red)';
-}
-
-function updateHeaderStatus() {
-  if (!globalState) return;
-  const s = globalState;
-  const el = document.getElementById('header-status-text');
-  const connDot   = document.getElementById('conn-dot');
-  const connLabel = document.getElementById('conn-label');
-  const connHtml  = `<span class="status-pill">${connDot.outerHTML}${connLabel.outerHTML}</span>`;
-
-  el.innerHTML = `
-    <span class="status-pill"><span class="dot dot-green"></span><span class="g">${s.online}</span>&nbsp;<span class="dim">online</span></span>
-    <span class="dim">·</span>
-    <span class="status-pill"><span class="dot dot-blue"></span><span class="b">${s.searching}</span>&nbsp;<span class="dim">buscando</span></span>
-    <span class="dim">·</span>
-    <span class="status-pill"><span class="dot dot-purple"></span><span class="p">${s.inGame}</span>&nbsp;<span class="dim">em jogo</span></span>
-    <span class="dim">·</span>
-    <span class="status-pill" id="conn-status"><span class="dot" id="conn-dot" style="background:var(--green);box-shadow:0 0 6px var(--green)"></span><span id="conn-label" style="color:var(--green)">ao vivo</span></span>
-  `;
-}
-
-// ─── TABS ─────────────────────────────────────────────────────────────────────
-document.querySelectorAll('.tab').forEach(tab => {
-  tab.addEventListener('click', () => switchTab(tab.dataset.tab));
-});
-
-function switchTab(name) {
-  activeTab = name;
-  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
-  document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id === `page-${name}`));
-  if (name === 'lobby')   { loadState(); renderLobby(); }
-  if (name === 'profile') loadProfile();
-  if (name === 'ranking') { loadState(); renderRanking(); }
-}
-
-// ─── DATA LOADING ─────────────────────────────────────────────────────────────
-async function loadState() {
-  try {
-    const r = await fetch('/api/state');
-    globalState = await r.json();
-  } catch(e) {}
-  updateHeaderStatus();
-  renderLobby();
-  renderRanking();
-}
-
-async function loadProfile(searchNick) {
-  const el = document.getElementById('page-profile');
-  if (searchNick) {
-    // Busca por nick
-    try {
-      const r = await fetch(`/api/player/nick/${encodeURIComponent(searchNick)}`);
-      const data = r.ok ? await r.json() : null;
-      renderProfileData(el, data, false, searchNick);
-    } catch(e) {
-      renderProfileData(el, null, false, searchNick);
-    }
-    return;
+  document.getElementById('online-count').innerText = `${state.online} online`;
+  document.getElementById('queue-3v3-count').innerText = `${state.queue3v3}/6`;
+  document.getElementById('queue-5v5-count').innerText = `${state.queue5v5}/10`;
+  
+  document.getElementById('queue-3v3-searching').style.display = playerStatus.inQueue3v3 ? 'flex' : 'none';
+  document.getElementById('queue-5v5-searching').style.display = playerStatus.inQueue5v5 ? 'flex' : 'none';
+  
+  // Lista de expostos
+  if (state.exposed && state.exposed.length > 0) {
+    document.getElementById('exposed-section').style.display = 'block';
+    document.getElementById('exposed-list').innerText = state.exposed.map(t => t.nick).join(', ');
+  } else {
+    document.getElementById('exposed-section').style.display = 'none';
   }
-  if (!USER_ID) { renderProfile(null); return; }
-  markPresence();
-  try {
-    const r = await fetch(`/api/player/${USER_ID}`);
-    playerData = r.ok ? await r.json() : null;
-  } catch(e) { playerData = null; }
-  renderProfile(playerData);
+
+  const rankList = document.getElementById('rank-list');
+  rankList.innerHTML = state.ranking.map(p => `
+    <div class="rank-row">
+      <span>#${p.pos} ${p.nick} ${p.fraud ? '💀' : ''}</span>
+      <span style="color:var(--yellow)">${p.fc}</span>
+    </div>
+  `).join('');
+});
+
+async function loadPlayer() {
+  const r = await fetch(`/api/player/${USER_ID}`);
+  const p = await r.json();
+  document.getElementById('me-nick').innerText = p.nick;
+  document.getElementById('me-fc').innerText = p.fc;
+  document.getElementById('me-fraud').innerText = p.fraud ? '⚠️ VOCÊ ESTÁ EXPOSTO POR FRAUDE (7 DIAS)' : '';
+  playerStatus.inQueue3v3 = p.inQueue3v3;
+  playerStatus.inQueue5v5 = p.inQueue5v5;
+  document.getElementById('prof-nick').innerText = p.nick;
+  document.getElementById('prof-stats').innerHTML = `Vitórias: ${p.wins}<br>Derrotas: ${p.losses}<br>Total: ${p.games}`;
 }
 
-async function loadMatch() {
-  if (!USER_ID) { renderMatchInLobby(null); return; }
-  try {
-    const r = await fetch(`/api/match/${USER_ID}`);
-    matchData = r.ok ? await r.json() : { inMatch: false };
-  } catch(e) { matchData = { inMatch: false }; }
-  renderMatchInLobby(matchData);
-}
-
-async function markPresence() {
-  if (!USER_ID) return;
-  lastActivityTs = Date.now();
-  try {
-    await fetch('/api/presence', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ telegramId: USER_ID })
-    });
-  } catch(e) {}
-}
-
-// ─── QUEUE ACTIONS ────────────────────────────────────────────────────────────
 async function joinQueue(mode) {
-  if (!USER_ID) { showToast('⚠ Abra pelo Telegram'); return; }
-  const btn3 = document.getElementById('btn-join-3v3');
-  const btn5 = document.getElementById('btn-join-5v5');
-  if (btn3) btn3.disabled = true;
-  if (btn5) btn5.disabled = true;
-
-  try {
-    const r = await fetch('/api/queue/join', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ telegramId: USER_ID, mode })
-    });
-    const data = await r.json();
-    if (data.ok) {
-      myStatus = `queue${mode}`;
-      lastActivityTs = Date.now();
-      showToast(`✅ Entrou na fila ${mode}`);
-      if (tg) tg.HapticFeedback?.impactOccurred('medium');
-      await loadState();
-      await loadPlayerData();
-      renderLobby();
-    } else {
-      showToast(`⚠ ${data.error || 'Erro ao entrar na fila'}`);
-      if (btn3) btn3.disabled = false;
-      if (btn5) btn5.disabled = false;
-    }
-  } catch(e) {
-    showToast('⚠ Erro de conexão');
-    if (btn3) btn3.disabled = false;
-    if (btn5) btn5.disabled = false;
-  }
+  const r = await fetch('/api/queue/join', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ telegramId: USER_ID, mode })
+  });
+  if (r.ok) playerStatus[mode === '3v3' ? 'inQueue3v3' : 'inQueue5v5'] = true;
 }
 
 async function leaveQueue() {
-  if (!USER_ID) return;
-  const btnLeave = document.getElementById('btn-leave-queue');
-  if (btnLeave) btnLeave.disabled = true;
-
-  try {
-    const r = await fetch('/api/queue/leave', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ telegramId: USER_ID })
-    });
-    const data = await r.json();
-    if (data.ok) {
-      myStatus = 'online';
-      showToast('✅ Saiu da fila');
-      if (tg) tg.HapticFeedback?.impactOccurred('light');
-      await loadState();
-      await loadPlayerData();
-      renderLobby();
-    } else {
-      showToast(`⚠ ${data.error || 'Erro'}`);
-      if (btnLeave) btnLeave.disabled = false;
-    }
-  } catch(e) {
-    showToast('⚠ Erro de conexão');
-    if (btnLeave) btnLeave.disabled = false;
-  }
+  await fetch('/api/queue/leave', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ telegramId: USER_ID })
+  });
+  playerStatus.inQueue3v3 = false;
+  playerStatus.inQueue5v5 = false;
 }
 
-async function setStatus(status) {
-  if (!USER_ID) return;
-  const btn = document.getElementById(`btn-set-${status}`);
-  if (btn) btn.disabled = true;
-
-  try {
-    const r = await fetch('/api/status', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ telegramId: USER_ID, status })
-    });
-    const data = await r.json();
-    if (data.ok) {
-      myStatus = status;
-      lastActivityTs = status === 'online' ? Date.now() : lastActivityTs;
-      showToast(status === 'online' ? '🟢 Você está online' : '💤 Você está ausente');
-      if (tg) tg.HapticFeedback?.impactOccurred('light');
-      await loadState();
-      await loadPlayerData();
-      renderLobby();
-    } else {
-      showToast(`⚠ ${data.error || 'Erro'}`);
-      if (btn) btn.disabled = false;
-    }
-  } catch(e) {
-    showToast('⚠ Erro de conexão');
-    if (btn) btn.disabled = false;
-  }
-}
-
-async function loadPlayerData() {
-  if (!USER_ID) return;
-  try {
-    const r = await fetch(`/api/player/${USER_ID}`);
-    playerData = r.ok ? await r.json() : null;
-  } catch(e) {}
-}
-
-// ─── RENDER: LOBBY (SAGUÃO + PARTIDA) ────────────────────────────────────────
-function renderLobby() {
-  const el = document.getElementById('page-lobby');
-
-  // Se há partida ativa, mostra a tela de partida
-  if (matchData && matchData.inMatch) {
-    renderMatchInLobby(matchData);
-    return;
-  }
-
-  if (!globalState) {
-    el.innerHTML = `<div class="loading"><div class="spinner"></div><span>Carregando...</span></div>`;
-    return;
-  }
-
-  const s = globalState;
-  const inQueue3 = playerData?.inQueue3v3 || false;
-  const inQueue5 = playerData?.inQueue5v5 || false;
-  const inQueue  = inQueue3 || inQueue5;
-  const isAway   = playerData ? !playerData.online && !inQueue : false;
-
-  // Status badge do jogador
-  let statusBadge = '';
-  if (inQueue3) statusBadge = `<span class="online-badge badge-queue">◈ BUSCANDO 3v3</span>`;
-  else if (inQueue5) statusBadge = `<span class="online-badge badge-queue">◈ BUSCANDO 5v5</span>`;
-  else if (isAway) statusBadge = `<span class="online-badge badge-away">💤 AUSENTE</span>`;
-  else if (playerData) statusBadge = `<span class="online-badge badge-online">⬤ ONLINE</span>`;
-
-  // Info do jogador
-  let playerBlock = '';
-  if (playerData) {
-    playerBlock = `
-    <div class="player-block">
-      <div class="player-nick">${playerData.nick}</div>
-      <div class="player-meta">
-        <span class="player-fc">${playerData.fc || '?'}</span>
-        <span class="player-rank">#${playerData.rank || '?'} BR</span>
-        ${statusBadge}
-      </div>
-    </div>`;
-  }
-
-  // Filas
-  const queue3Highlight = inQueue3 ? ' style="background:var(--green-dim);border:2px solid var(--green);border-radius:12px;padding:12px;margin:-12px"' : '';
-  const queue5Highlight = inQueue5 ? ' style="background:var(--blue-dim);border:2px solid var(--blue);border-radius:12px;padding:12px;margin:-12px"' : '';
-  const queueBlock = `
-  <div class="queue-status">
-    <div class="section-title">Filas Abertas</div>
-    <div class="queue-row"${queue3Highlight}>
-      <div>
-        <div class="queue-label" style="font-size:20px;font-weight:700">🎯 3v3 Ranked</div>
-        <div class="queue-sub">Ranked · 6 jogadores</div>
-      </div>
-      <div style="text-align:right">
-        <div class="queue-count g" style="font-size:28px">${s.queue3v3}<span class="dim" style="font-size:14px">/6</span></div>
-      </div>
-    </div>
-    <div class="queue-row"${queue5Highlight}>
-      <div>
-        <div class="queue-label" style="font-size:20px;font-weight:700">🔥 5v5 Casual</div>
-        <div class="queue-sub">Casual · 10 jogadores</div>
-      </div>
-      <div style="text-align:right">
-        <div class="queue-count b" style="font-size:28px">${s.queue5v5}<span class="dim" style="font-size:14px">/10</span></div>
-      </div>
-    </div>
-  </div>`;
-
-  // Botões de ação
-  let actionButtons = '';
-  if (!playerData) {
-    actionButtons = `<div style="color:var(--text-dim);text-align:center;padding:16px 0;font-size:12px">Use /start no bot para se registrar</div>`;
-  } else if (inQueue) {
-    // Em fila: mostrar apenas "Sair da Fila"
-    actionButtons = `
-    <div class="btn-row">
-      <button class="btn btn-red btn-full" id="btn-leave-queue" onclick="leaveQueue()">
-        ❌ Sair da Fila
-      </button>
-    </div>`;
-  } else if (isAway) {
-    // Ausente: mostrar apenas "Ficar Online"
-    actionButtons = `
-    <div class="btn-row">
-      <button class="btn btn-green btn-full" id="btn-set-online" onclick="setStatus('online')">
-        🟢 Ficar Online
-      </button>
-    </div>`;
-  } else {
-    // Online: mostrar Entrar 3v3, Entrar 5v5 e Ficar Ausente
-    actionButtons = `
-    <div class="btn-row">
-      <button class="btn btn-green" id="btn-join-3v3" onclick="joinQueue('3v3')">
-        🎯 Entrar 3v3 Ranked
-      </button>
-      <button class="btn btn-blue" id="btn-join-5v5" onclick="joinQueue('5v5')">
-        🔥 Entrar 5v5 Casual
-      </button>
-    </div>
-    <div class="btn-row">
-      <button class="btn btn-gray btn-full" id="btn-set-away" onclick="setStatus('away')">
-        💤 Ficar Ausente
-      </button>
-    </div>`;
-  }
-
-  el.innerHTML = `
-    ${playerBlock}
-    <hr class="sep">
-    ${queueBlock}
-    <hr class="sep">
-    <div class="section-title">Ações</div>
-    ${actionButtons}
-  `;
-}
-
-// ─── RENDER: MATCH (dentro da aba Saguão) ────────────────────────────────────
-function renderMatchInLobby(data) {
-  const el = document.getElementById('page-lobby');
-  if (!data || !data.inMatch) {
-    // Sem partida: renderiza o saguão normal
-    matchData = { inMatch: false };
-    renderLobby();
-    return;
-  }
-
-  const allies = (data.allies || []).map(a =>
-    `<div class="ally-row"><span class="ally-nick">▸ ${a.nick}</span><span class="ally-fc">${a.fc}</span></div>`
-  ).join('');
-
-  const confirmDots = Array.from({ length: data.total }, (_, i) => {
-    const done = i < data.confirmed;
-    return `<div class="confirm-dot ${done ? 'done' : ''}">${done ? '✔' : ''}</div>`;
-  }).join('');
-
-  const confirmStatus = data.iConfirmed
-    ? `<span class="g">✅ Nick alterado — aguardando outros</span>`
-    : `<span class="y">⚠ Mude seu nick e confirme no bot</span>`;
-
-  el.innerHTML = `
-    <div class="match-banner">
-      <div class="match-title">⚔ PARTIDA ENCONTRADA</div>
-      <div class="match-id">#${data.matchId} · ${data.mode === '3v3' ? '3v3 Ranked' : '5v5 Casual'}</div>
-      <div style="color:var(--text-dim);font-size:11px;margin-bottom:6px">SNIPING CODE</div>
-      <div class="sniping-code">${data.snipingCode}</div>
-      <div style="color:var(--text-dim);font-size:11px;margin-top:10px;margin-bottom:4px">MUDE SEU NICK PARA</div>
-      <div class="nick-format">${data.myNickFormat}SeuNick</div>
-    </div>
-
-    <div class="section-title">Seu Time 🟦 (${data.mode === '3v3' ? '3v3 Ranked' : '5v5 Casual'})</div>
-    <div style="margin-bottom:20px">${allies}</div>
-
-    <div class="section-title">Adversários 🟥</div>
-    <div style="color:var(--text-dim);font-size:13px;margin-bottom:20px">
-      ${Array.from({ length: data.total / 2 }, () => '<div style="padding:10px 0;border-bottom:1px solid var(--border)">▸ <span style="color:var(--text-dim)">oculto</span></div>').join('')}
-    </div>
-
-    <div class="section-title">Confirmações (${data.confirmed}/${data.total})</div>
-    <div class="confirm-dots">${confirmDots}</div>
-    <div style="text-align:center;margin-top:8px;margin-bottom:20px;font-size:13px">${confirmStatus}</div>
-
-    <div id="countdown-section" style="display:none">
-      <hr class="sep">
-      <div class="section-title">⏱ Busca Iniciando Em</div>
-      <div class="countdown-num" id="cd-num">10</div>
-      <div class="progress-bar"><div class="progress-fill" id="cd-bar" style="width:0%"></div></div>
-      <div style="text-align:center;color:var(--yellow);font-size:14px;font-weight:700;margin-top:8px">⚡ Preparem-se para buscar!</div>
-    </div>
-  `;
-}
-
-function startCountdown() {
-  clearInterval(countdownInt);
-  countdownVal = 10;
-  const section = document.getElementById('countdown-section');
-  if (section) section.style.display = 'block';
-  countdownInt = setInterval(() => {
-    countdownVal--;
-    const numEl = document.getElementById('cd-num');
-    const barEl = document.getElementById('cd-bar');
-    if (numEl) numEl.textContent = countdownVal;
-    if (barEl) {
-      const pct = Math.round((10 - countdownVal) / 10 * 100);
-      barEl.style.width = pct + '%';
-    }
-    if (countdownVal <= 0) {
-      clearInterval(countdownInt);
-      showToast('🎯 BUSQUEM AGORA!');
-      if (tg) tg.HapticFeedback?.notificationOccurred('success');
-    }
-  }, 1000);
-}
-
-// ─── RENDER: PROFILE ──────────────────────────────────────────────────────────
-function renderProfile(data) {
-  const el = document.getElementById('page-profile');
-  renderProfileData(el, data, true, null);
-}
-
-function renderProfileData(el, data, isOwn, searchedNick) {
-  // Caixa de busca sempre presente
-  const searchBox = `
-    <div class="search-box">
-      <input type="text" class="search-input" id="nick-search-input" placeholder="Buscar jogador por nick..." />
-      <button class="btn btn-blue" style="flex:none;padding:14px 18px;" onclick="searchPlayer()">🔍</button>
-    </div>
-  `;
-
-  if (!USER_ID && isOwn) {
-    el.innerHTML = searchBox + `<div class="empty-state">
-      <div class="icon">🤖</div>
-      <div class="title">Abra pelo Telegram</div>
-      <div>Acesse via bot para ver seu perfil</div>
-    </div>`;
-    return;
-  }
-
-  if (searchedNick && !data) {
-    el.innerHTML = searchBox + `<div class="empty-state">
-      <div class="icon">🔍</div>
-      <div class="title">Jogador não encontrado</div>
-      <div>Nenhum jogador com nick "<span class="y">${searchedNick}</span>"</div>
-    </div>`;
-    return;
-  }
-
-  if (!data && isOwn) {
-    el.innerHTML = searchBox + `<div class="empty-state">
-      <div class="icon">❓</div>
-      <div class="title">Não registrado</div>
-      <div>Use /start no bot para criar seu perfil</div>
-    </div>`;
-    return;
-  }
-
-  if (!data) {
-    el.innerHTML = searchBox;
-    return;
-  }
-
-  const isPenalty = data.penalty;
-  let penaltyBlock = '';
-  if (isPenalty) {
-    const exp = data.penaltyUntil ? new Date(data.penaltyUntil).toLocaleString('pt-BR') : '?';
-    penaltyBlock = `
-    <div class="penalty-card">
-      <div class="penalty-title">💀 JOGADOR PENALIZADO</div>
-      <div style="color:var(--text-dim);font-size:12px;margin-top:6px">Motivo: Não confirmou a partida</div>
-      <div class="penalty-exp">Expira em: ${exp}</div>
-    </div>`;
-  }
-
-  const wr = data.winRate || '0.0';
-  const fc = isPenalty ? '💀' : (data.fc || '?');
-
-  el.innerHTML = searchBox + penaltyBlock + `
-    <div class="player-block">
-      <div class="player-nick">${data.nick}</div>
-      <div class="player-meta" style="margin-top:6px">
-        <span class="player-fc">${fc}</span>
-        ${data.rank ? `<span class="player-rank">#${data.rank} BR</span>` : ''}
-        ${isOwn ? `<span class="online-badge ${data.online ? 'badge-online' : 'badge-offline'}">${data.online ? '⬤ ONLINE' : '○ OFFLINE'}</span>` : ''}
-      </div>
-    </div>
-
-    <hr class="sep">
-
-    <div class="section-title">Estatísticas</div>
-    <div class="stats-grid">
-      <div class="stat-box">
-        <div class="stat-box-val g">${data.wins}</div>
-        <div class="stat-box-lbl">VITÓRIAS</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-box-val r">${data.losses}</div>
-        <div class="stat-box-lbl">DERROTAS</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-box-val w">${data.games}</div>
-        <div class="stat-box-lbl">PARTIDAS</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-box-val b">${wr}%</div>
-        <div class="stat-box-lbl">WIN RATE</div>
-      </div>
-    </div>
-
-    <hr class="sep">
-
-    <div class="section-title">Ranking</div>
-    <div style="display:flex;align-items:center;gap:14px;padding:10px 0">
-      <span style="font-size:32px">🏆</span>
-      <div>
-        <div style="color:var(--purple);font-size:22px;font-weight:700">#${data.rank || '?'} BR</div>
-        <div style="color:var(--text-dim);font-size:12px">de ${data.totalRanked || '?'} jogadores ranqueados</div>
-      </div>
-    </div>
-  `;
-}
-
-function searchPlayer() {
-  const input = document.getElementById('nick-search-input');
-  const nick  = input?.value?.trim();
-  if (!nick) {
-    // Volta para o perfil próprio
-    loadProfile();
-    return;
-  }
-  loadProfile(nick);
-}
-
-// Permite buscar pressionando Enter
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter' && activeTab === 'profile') {
-    searchPlayer();
-  }
-});
-
-// ─── RENDER: RANKING ──────────────────────────────────────────────────────────
-function renderRanking() {
-  const el = document.getElementById('page-ranking');
-  if (!globalState?.ranking) {
-    el.innerHTML = `<div class="loading"><div class="spinner"></div></div>`;
-    return;
-  }
-
-  const medals = ['🥇','🥈','🥉'];
-  const rows = globalState.ranking.map((p, i) => {
-    const medal = i < 3 ? medals[i] : `${i + 1}`;
-    const fc = p.penalty ? '💀' : p.fc;
-    const wr = p.games > 0 ? ((p.wins / p.games) * 100).toFixed(1) : '0.0';
-    return `
-    <div class="rank-row">
-      <div class="rank-pos">${medal}</div>
-      <div class="rank-info">
-        <div class="rank-nick">${p.nick}</div>
-        <div class="rank-sub">${p.games} partidas · ${wr}% WR</div>
-      </div>
-      <div class="rank-fc">${fc}</div>
-    </div>`;
-  }).join('');
-
-  el.innerHTML = `
-    <div class="section-title">Top Players BR</div>
-    ${rows}
-    <div style="color:var(--text-dim);font-size:11px;text-align:center;margin-top:18px;padding-top:14px;border-top:1px solid var(--border)">
-      Mín. 10 partidas para rankear
-    </div>
-  `;
-}
-
-// ─── TOAST ────────────────────────────────────────────────────────────────────
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  if (tg) tg.HapticFeedback?.impactOccurred('light');
-  setTimeout(() => t.classList.remove('show'), 3000);
-}
-
-// ─── AUTO AWAY (2 min sem atividade) ─────────────────────────────────────────
-setInterval(() => {
-  if (!USER_ID) return;
-  const now = Date.now();
-  const twoMin = 2 * 60 * 1000;
-  // Se passou 2 min sem atividade e está online (não em fila, não em partida)
-  if (myStatus === 'online' && (now - lastActivityTs) > twoMin) {
-    setStatus('away');
-  }
-}, 30 * 1000);
-
-// Registra atividade em interações do usuário
-document.addEventListener('touchstart', () => { lastActivityTs = Date.now(); }, { passive: true });
-document.addEventListener('click', () => { lastActivityTs = Date.now(); }, { passive: true });
-
-// ─── INIT ─────────────────────────────────────────────────────────────────────
-markPresence();
-loadState();
-loadPlayerData().then(() => renderLobby());
-loadMatch();
-
-// Refresca presença a cada 60s
-setInterval(markPresence, 60 * 1000);
-
-// Refresca dados a cada 15s como fallback
-setInterval(async () => {
-  await loadState();
-  await loadPlayerData();
-  if (activeTab === 'lobby') {
-    await loadMatch();
-    renderLobby();
-  }
-}, 15 * 1000);
+loadPlayer();
+tg.expand();
 </script>
 </body>
 </html>
