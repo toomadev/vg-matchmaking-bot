@@ -1,6 +1,6 @@
 const { initDB }    = require('./database');
 const { startServer } = require('./server');
-const { startBot }    = require('./index');
+const { startBot }    = require('./bot');
 
 async function main() {
     console.log('[MAIN] Iniciando banco de dados...');
