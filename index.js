@@ -87,7 +87,7 @@ function setupHandlers(bot) {
             await pool.execute('INSERT INTO players (telegram_id, nickname) VALUES (?, ?)', [ctx.from.id, nick]);
             pendingNick.delete(ctx.from.id);
             
-            await ctx.reply(`✅ Nick *${nick}* registrado!`, { parse_mode: 'Markdown' });
+            await ctx.reply(`✅ Nick <b>${nick}</b> registrado!`, { parse_mode: 'HTML' });
             await sleep(500);
             await sendAppPortal(ctx);
         } catch (err) {
@@ -114,33 +114,33 @@ async function sendAppPortal(ctx) {
             keyboard = {};
         }
 
-        // Tutorial em HTML simples (mais compatível que MarkdownV2)
+        // Tutorial em HTML (muito mais robusto que Markdown para caracteres especiais)
         const tutorial = 
-            '⚡ *VG Matchmaking BR*\n\n' +
-            '📖 *COMO USAR:*\n\n' +
-            '1️⃣ *Escolha a Fila*\n' +
-            '   🎯 *3v3 Ranked* — Competitivo, ganha/perde FC\n' +
-            '   🔥 *5v5 Casual* — Sem pontos, apenas diversão\n\n' +
-            '2️⃣ *Aguarde a Partida*\n' +
+            '⚡ <b>VG Matchmaking BR</b>\n\n' +
+            '📖 <b>COMO USAR:</b>\n\n' +
+            '1️⃣ <b>Escolha a Fila</b>\n' +
+            '   🎯 <b>3v3 Ranked</b> — Competitivo, ganha/perde FC\n' +
+            '   🔥 <b>5v5 Casual</b> — Sem pontos, apenas diversão\n\n' +
+            '2️⃣ <b>Aguarde a Partida</b>\n' +
             '   Quando 6 ou 10 jogadores forem encontrados, você receberá:\n' +
             '   • ID da partida (#XXXXX)\n' +
             '   • Sniping Code (ex: VG-1_)\n' +
             '   • Nomes dos seus aliados\n\n' +
-            '3️⃣ *Mude Seu Nick*\n' +
+            '3️⃣ <b>Mude Seu Nick</b>\n' +
             '   Antes de entrar no jogo, mude seu nick para:\n' +
-            '   SNIPING_CODE-NUMERO_SeuNick\n' +
-            '   Exemplo: VG-1_Seu_Nick\n\n' +
-            '4️⃣ *Jogue!*\n' +
+            '   <code>SNIPING_CODE-NUMERO_SeuNick</code>\n' +
+            '   Exemplo: <code>VG-1_Seu_Nick</code>\n\n' +
+            '4️⃣ <b>Jogue!</b>\n' +
             '   Encontre seus aliados (mesma cor) e vença!\n\n' +
-            '💡 *DICAS:*\n' +
-            '   • Fique *Online* para ser encontrado\n' +
-            '   • Clique em *Ausente* se precisar sair\n' +
-            '   • Veja seu *Perfil* e *Ranking*\n' +
+            '💡 <b>DICAS:</b>\n' +
+            '   • Fique <b>Online</b> para ser encontrado\n' +
+            '   • Clique em <b>Ausente</b> se precisar sair\n' +
+            '   • Veja seu <b>Perfil</b> e <b>Ranking</b>\n' +
             '   • Busque outros jogadores por nick\n\n' +
-            '🚀 *Pronto? Toque no botão abaixo!*';
+            '🚀 <b>Pronto? Toque no botão abaixo!</b>';
 
         console.log(`[BOT] Enviando tutorial para ${ctx.from.id}...`);
-        await ctx.reply(tutorial, { parse_mode: 'Markdown', ...keyboard });
+        await ctx.reply(tutorial, { parse_mode: 'HTML', ...keyboard });
         console.log(`[BOT] Tutorial enviado com sucesso para ${ctx.from.id}`);
     } catch (err) {
         console.error(`[BOT] Erro ao enviar portal:`, err);
@@ -195,6 +195,3 @@ async function startBot() {
 
 // ─── EXPORT ───────────────────────────────────────────────────────────────────
 module.exports = { startBot };
-
-
-require('./server');
