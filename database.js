@@ -78,7 +78,7 @@ async function initDB() {
         )
     `);
     await pool.execute(`
-        CREATE TABLE IF NOT EXISTS news (`
+        CREATE TABLE IF NOT EXISTS news (
             id INT AUTO_INCREMENT PRIMARY KEY,
             content TEXT,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
